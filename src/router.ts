@@ -5,8 +5,9 @@ import { useEffect, useState } from 'react'
 //   #/psalm/023      a psalm (023b: the second version)
 //   #/psalm/023?tune=dundee
 //   #/about
+//   #/about/metre   the About page, at the section on metre
 
-export type Route = { view: 'library' } | { view: 'psalm'; key: string; tune?: string } | { view: 'about' }
+export type Route = { view: 'library' } | { view: 'psalm'; key: string; tune?: string } | { view: 'about'; section?: string }
 
 export function parseRoute(hash = location.hash): Route {
   const [path, query = ''] = hash.replace(/^#\/?/, '').split('?')
@@ -15,7 +16,7 @@ export function parseRoute(hash = location.hash): Route {
     const tune = new URLSearchParams(query).get('tune') ?? undefined
     return { view: 'psalm', key: parts[1], tune }
   }
-  if (parts[0] === 'about') return { view: 'about' }
+  if (parts[0] === 'about') return { view: 'about', section: parts[1] }
   return { view: 'library' }
 }
 

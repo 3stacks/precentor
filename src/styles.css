@@ -602,3 +602,50 @@ button.icon.on {
     padding: 12px 12px;
   }
 }
+
+/* The metre section on the About page. */
+.metre-example,
+.metres {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0 0 14px;
+}
+.metre-example td {
+  padding: 4px 0;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+}
+.metre-example td.count {
+  text-align: right;
+  font-family: var(--display);
+  font-weight: 800;
+  color: var(--accent);
+  width: 3em;
+}
+.metres th,
+.metres td {
+  text-align: left;
+  vertical-align: top;
+  padding: 8px 10px 8px 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.95rem;
+}
+.metres th {
+  font-size: 0.8rem;
+  color: var(--muted);
+  border-top: 0;
+}
+.metres td:first-child {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.eyebrow a {
+  color: inherit;
+}
+.eyebrow a:hover {
+  text-decoration: underline;
+}
+#metre {
+  scroll-margin-top: 80px;
+}

@@ -7,8 +7,8 @@ import { PsalmView } from './views/PsalmView.tsx'
 export function App() {
   const route = useRoute()
   useEffect(() => {
-    if (route.view !== 'psalm') window.scrollTo(0, 0)
-  }, [route.view])
+    if (route.view === 'library' || (route.view === 'about' && !route.section)) window.scrollTo(0, 0)
+  }, [route])
   return (
     <>
       <div className="app">
@@ -22,7 +22,7 @@ export function App() {
         </nav>
       </header>
       <main className={route.view === 'psalm' ? 'main psalm-main' : 'main'}>
-        {route.view === 'psalm' ? <PsalmView key={route.key} psalmKey={route.key} tuneSlug={route.tune} /> : route.view === 'about' ? <About /> : <Library />}
+        {route.view === 'psalm' ? <PsalmView key={route.key} psalmKey={route.key} tuneSlug={route.tune} /> : route.view === 'about' ? <About section={route.section} /> : <Library />}
       </main>
       </div>
     </>

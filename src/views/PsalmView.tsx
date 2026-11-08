@@ -62,7 +62,11 @@ export function PsalmView({ psalmKey, tuneSlug }: { psalmKey: string; tuneSlug?:
   return (
     <div className="stack">
       <section className="card psalm-head">
-        <p className="eyebrow">{meterLabel(entry.meterName, entry.meter)}</p>
+        <p className="eyebrow">
+          <a href="#/about/metre" title="What the metre means">
+            {meterLabel(entry.meterName, entry.meter)}
+          </a>
+        </p>
         <h1>{psalmLabel(entry)}</h1>
         <div className="tune-pick">
           <label htmlFor="tune">Tune</label>
