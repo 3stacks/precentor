@@ -27,7 +27,7 @@ CI owns the deployment to Cloudflare Pages. Do not deploy from a workstation.
 5. It deploys the artifact and the Pages Functions to the production branch `main`.
 6. It checks the app, the psalm data and `/a/boot.js` on the live site.
 
-A pull request from this repository also gets a preview. The job summary of the `Website` run
+Each pull request from this repository also gets a preview. The job summary of the `Website` run
 shows the preview address.
 
 The workflows need two repository secrets:
