@@ -30,7 +30,7 @@ jobs:
       - id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/3stacks/psalter
+          images: ghcr.io/3stacks/precentor
           tags: |
             type=sha,prefix=
             type=semver,pattern={{version}}

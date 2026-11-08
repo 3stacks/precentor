@@ -13,13 +13,13 @@ describe('settings', () => {
     expect(forwardingOrigin(' https://umami.example/script.js?x=1 ')).toBe('https://umami.example')
     expect(forwardingOrigin('https://user:pass@umami.example')).toBeNull()
     expect(forwardingOrigin('ftp://umami.example')).toBeNull()
-    expect(websiteId('psalter.pages.dev')).toBeNull()
+    expect(websiteId('precentor.pages.dev')).toBeNull()
     expect(websiteId(WEBSITE.toUpperCase())).toBe(WEBSITE)
   })
 
   it('counts production and the extra hosts only', () => {
-    expect(countedHost('psalter.pages.dev', {})).toBe(true)
-    expect(countedHost('feat-x.psalter.pages.dev', {})).toBe(false)
+    expect(countedHost('precentor.pages.dev', {})).toBe(true)
+    expect(countedHost('feat-x.precentor.pages.dev', {})).toBe(false)
     expect(countedHost('localhost', {})).toBe(false)
     expect(countedHost('example.org', {})).toBe(false)
     expect(countedHost('www.example.org', { ANALYTICS_HOSTS: 'example.org, WWW.example.org' })).toBe(true)
@@ -28,7 +28,7 @@ describe('settings', () => {
 
 describe('stampCollectBody', () => {
   it('puts our id on an event, and refuses an event for another website', () => {
-    const ok = stampCollectBody(JSON.stringify({ type: 'event', payload: { website: 'psalter.pages.dev', url: '/' } }), WEBSITE)
+    const ok = stampCollectBody(JSON.stringify({ type: 'event', payload: { website: 'precentor.pages.dev', url: '/' } }), WEBSITE)
     expect(ok.ok && JSON.parse(ok.body).payload.website).toBe(WEBSITE)
     expect(stampCollectBody(JSON.stringify({ payload: { website: OTHER } }), WEBSITE)).toEqual({ ok: false, status: 400 })
     expect(stampCollectBody('not json', WEBSITE)).toEqual({ ok: false, status: 400 })
@@ -38,15 +38,15 @@ describe('stampCollectBody', () => {
 
 describe('handleAnalytics', () => {
   it('gives an empty boot.js on a preview, and the loader on production', async () => {
-    const preview = await handleAnalytics(req('https://feat-x.psalter.pages.dev/a/boot.js'), ENV)
+    const preview = await handleAnalytics(req('https://feat-x.precentor.pages.dev/a/boot.js'), ENV)
     expect(await preview.text()).toBe('/* analytics off */\n')
-    const off = await handleAnalytics(req('https://psalter.pages.dev/a/boot.js'), {})
+    const off = await handleAnalytics(req('https://precentor.pages.dev/a/boot.js'), {})
     expect(await off.text()).toBe('/* analytics off: ANALYTICS_FORWARDING_URL is empty; ANALYTICS_WEBSITE_ID is empty */\n')
-    const bad = await handleAnalytics(req('https://psalter.pages.dev/a/boot.js'), { ANALYTICS_FORWARDING_URL: 'umami.example', ANALYTICS_WEBSITE_ID: '"' + WEBSITE + '"' })
+    const bad = await handleAnalytics(req('https://precentor.pages.dev/a/boot.js'), { ANALYTICS_FORWARDING_URL: 'umami.example', ANALYTICS_WEBSITE_ID: '"' + WEBSITE + '"' })
     const text = await bad.text()
     expect(text).toBe('/* analytics off: ANALYTICS_FORWARDING_URL is not an http(s) URL; ANALYTICS_WEBSITE_ID is not a UUID */\n')
     expect(text).not.toContain(WEBSITE)
-    const on = await handleAnalytics(req('https://psalter.pages.dev/a/boot.js'), ENV)
+    const on = await handleAnalytics(req('https://precentor.pages.dev/a/boot.js'), ENV)
     expect(await on.text()).toBe(bootSource(WEBSITE))
     expect(on.headers.get('cache-control')).toBe('no-store')
   })
@@ -55,7 +55,7 @@ describe('handleAnalytics', () => {
     const fetch = vi.fn(async () => new Response('{"ok":true}', { status: 200, headers: { 'content-type': 'application/json' } }))
     vi.stubGlobal('fetch', fetch)
     const r = await handleAnalytics(
-      req('https://psalter.pages.dev/a/api/send', { method: 'POST', body: JSON.stringify({ type: 'event', payload: { url: '/' } }), headers: { 'cf-connecting-ip': '203.0.113.9' } }),
+      req('https://precentor.pages.dev/a/api/send', { method: 'POST', body: JSON.stringify({ type: 'event', payload: { url: '/' } }), headers: { 'cf-connecting-ip': '203.0.113.9' } }),
       ENV,
     )
     expect(r.status).toBe(200)

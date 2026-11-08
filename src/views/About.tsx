@@ -12,7 +12,8 @@ export function About({ section }: { section?: string }) {
   return (
     <div className="stack prose">
       <section className="card">
-        <h1>About</h1>
+        <h1>About Precentor</h1>
+        <p>In Scottish churches the precentor led the psalm singing. He sang each line, and the people sang it after him. This app does the same work.</p>
         <p>
           This app holds the 1650 Scottish Psalter: the Psalms of David in Metre. It has all 150 psalms and the second versions of 13 psalms. Each psalm has a
           choice of tunes. The player plays the tune in four parts and shows each syllable when you must sing it.

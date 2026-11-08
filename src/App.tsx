@@ -14,7 +14,7 @@ export function App() {
       <div className="app">
       <header className="top">
         <a className="brand" href="#/">
-          <Mark /> Psalter
+          <Mark /> Precentor
         </a>
         <nav>
           <a href="#/">Psalms</a>

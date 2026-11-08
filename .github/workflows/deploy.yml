@@ -9,7 +9,7 @@ on:
     types: [completed]
 
 concurrency:
-  group: psalter-pages-production
+  group: precentor-pages-production
   cancel-in-progress: false
 
 permissions:
@@ -18,7 +18,7 @@ permissions:
   deployments: write
 
 env:
-  PROJECT: psalter
+  PROJECT: precentor
 
 jobs:
   deploy:

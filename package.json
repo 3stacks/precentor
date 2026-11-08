@@ -1,5 +1,5 @@
 {
-  "name": "psalter",
+  "name": "precentor",
   "version": "0.1.0",
   "description": "Sing the 1650 Scottish Psalter: every psalm, a choice of tunes, and a player that follows each syllable.",
   "type": "module",

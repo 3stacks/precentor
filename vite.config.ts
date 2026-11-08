@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
-        name: 'Psalter',
-        short_name: 'Psalter',
+        name: 'Precentor',
+        short_name: 'Precentor',
         description: 'Sing the 1650 Scottish Psalter.',
         theme_color: '#7a2e2e',
         background_color: '#f8fafc',

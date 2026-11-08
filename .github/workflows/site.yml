@@ -34,7 +34,7 @@ jobs:
       contents: read
       deployments: write
     env:
-      PROJECT: psalter
+      PROJECT: precentor
     steps:
       - uses: actions/checkout@v4
 

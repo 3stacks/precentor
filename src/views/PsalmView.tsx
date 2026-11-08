@@ -38,9 +38,9 @@ export function PsalmView({ psalmKey, tuneSlug }: { psalmKey: string; tuneSlug?:
   }, [base, tune, chosen?.id, transpose])
 
   useEffect(() => {
-    if (base) document.title = `${psalmLabel(base.entry)} · Psalter`
+    if (base) document.title = `${psalmLabel(base.entry)} · Precentor`
     return () => {
-      document.title = 'Psalter'
+      document.title = 'Precentor'
     }
   }, [base])
 

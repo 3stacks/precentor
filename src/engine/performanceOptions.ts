@@ -55,11 +55,11 @@ export function nextPsalmNumber(number: number): number | null {
 
 export function readPlaybackPreference<T>(key: string, fallback: T): T {
   try {
-    const stored = localStorage.getItem(`psalter:${key}`);
+    const stored = localStorage.getItem(`precentor:${key}`);
     return stored === null ? fallback : JSON.parse(stored) as T;
   } catch { return fallback; }
 }
 
 export function savePlaybackPreference(key: string, value: unknown): void {
-  try { localStorage.setItem(`psalter:${key}`, JSON.stringify(value)); } catch { /* Playback works without storage. */ }
+  try { localStorage.setItem(`precentor:${key}`, JSON.stringify(value)); } catch { /* Playback works without storage. */ }
 }

@@ -30,7 +30,7 @@ export function offReason(env: AnalyticsEnv, host: string | null): string {
 }
 
 /** The production hosts. Add another domain with ANALYTICS_HOSTS. */
-const PRODUCTION = ['psalter.pages.dev']
+const PRODUCTION = ['precentor.app', 'www.precentor.app', 'precentor.pages.dev']
 
 export interface AnalyticsEnv {
   /** The Umami origin, for example https://umami.example.com. Empty: analytics off. */
