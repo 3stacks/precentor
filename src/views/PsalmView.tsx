@@ -1,12 +1,13 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { loadIndex, loadPsalm, loadSetting, loadTune, meterLabel, psalmLabel, tuneLabel, tunesFor, type PsalmEntry, type TuneEntry } from '../data/corpus.ts'
 import { compilePerformance, type CompiledPerformance, type SyllableCue } from '../engine/compilePerformance.ts'
 import { normalizeTranspose, readPlaybackPreference, savePlaybackPreference, transposePerformance } from '../engine/performanceOptions.ts'
 import { retargetSetting } from '../engine/retargetSetting.ts'
-import type { PsalmRecord, PsalmSetting, SettingStanza } from '../engine/types.ts'
+import type { PsalmRecord, PsalmSetting, SettingStanza, TuneRecord } from '../engine/types.ts'
 import { useSingAlong } from '../engine/useSingAlong.ts'
 import { psalmHref } from '../router.ts'
 import { useAsync } from '../useAsync.ts'
+import { Score } from './Score.tsx'
 
 const SIB = 'https://haddingtonbible.org'
 const HEARERS = 'https://hearers.app/app/'
@@ -29,7 +30,7 @@ export function PsalmView({ psalmKey, tuneSlug }: { psalmKey: string; tuneSlug?:
     if (!base || !tune || tune.id !== chosen?.id) return undefined
     try {
       const setting = tune.id === base.homeTune.id ? base.setting : retargetSetting(base.setting, base.homeTune, tune)
-      return { setting, performance: transposePerformance(compilePerformance(tune, setting), transpose) }
+      return { setting, tune, performance: transposePerformance(compilePerformance(tune, setting), transpose) }
     } catch (e) {
       return { error: (e as Error).message }
     }
@@ -93,7 +94,7 @@ export function PsalmView({ psalmKey, tuneSlug }: { psalmKey: string; tuneSlug?:
       ) : 'error' in built ? (
         <p className="empty">This tune does not fit this psalm. {built.error}</p>
       ) : (
-        <Player key={built.performance.id} performance={built.performance} psalm={psalm} setting={built.setting} entry={entry} tuneSlug={chosen.slug} onKey={changeKey} />
+        <Player key={built.performance.id} performance={built.performance} psalm={psalm} setting={built.setting} tune={built.tune} transpose={transpose} entry={entry} tuneSlug={chosen.slug} onKey={changeKey} />
       )}
 
       <nav className="pager">
@@ -113,12 +114,14 @@ interface PlayerProps {
   performance: CompiledPerformance
   psalm: PsalmRecord
   setting: PsalmSetting
+  tune: TuneRecord
+  transpose: number
   entry: PsalmEntry
   tuneSlug: string
   onKey: (step: number) => void
 }
 
-function Player({ performance, psalm, setting, entry, tuneSlug, onKey }: PlayerProps) {
+function Player({ performance, psalm, setting, tune, transpose, entry, tuneSlug, onKey }: PlayerProps) {
   const s = useSingAlong(performance)
   const sRef = useRef(s)
   sRef.current = s
@@ -152,6 +155,28 @@ function Player({ performance, psalm, setting, entry, tuneSlug, onKey }: PlayerP
     return m
   }, [performance])
   const syllableCue = useMemo(() => new Map(performance.syllables.map((c) => [c.syllableId, c])), [performance])
+  const seekRef = useRef(s.seek)
+  seekRef.current = s.seek
+  const onLine = useCallback(
+    (lineId: string) => {
+      const t = lineStart.get(lineId)
+      if (t !== undefined) seekRef.current(t)
+    },
+    [lineStart],
+  )
+
+  // Words or music, and the melody shape over the words.
+  const [mode, setMode] = useState<'words' | 'music'>(() => (readPlaybackPreference<string>('view', 'words') === 'music' ? 'music' : 'words'))
+  const [shape, setShape] = useState(() => readPlaybackPreference<boolean>('shape', true) !== false)
+  const chooseMode = (m: 'words' | 'music') => {
+    setMode(m)
+    savePlaybackPreference('view', m)
+  }
+  const toggleShape = (on: boolean) => {
+    setShape(on)
+    savePlaybackPreference('shape', on)
+  }
+  const melody = useMemo(() => melodyShape(tune, setting), [tune, setting])
 
   const playing = s.status === 'playing'
   const inIntro = s.currentTick < performance.introTicks
@@ -161,7 +186,7 @@ function Player({ performance, psalm, setting, entry, tuneSlug, onKey }: PlayerP
   // Follow the sung line.
   const [follow, setFollow] = useState(true)
   useEffect(() => {
-    if (!playing || !follow) return
+    if (!playing || !follow || mode !== 'words') return
     const target = activeLineId ? document.querySelector<HTMLElement>(`[data-line="${activeLineId}"]`) : document.querySelector<HTMLElement>('.stanza')
     if (!target) return
     const bar = document.querySelector<HTMLElement>('.player')
@@ -170,32 +195,97 @@ function Player({ performance, psalm, setting, entry, tuneSlug, onKey }: PlayerP
     const top = window.scrollY + box.top - visible * 0.35
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     window.scrollTo({ top: Math.max(0, top), behavior: reduce ? 'auto' : 'smooth' })
-  }, [activeLineId, playing, follow])
+  }, [activeLineId, playing, follow, mode])
+
+  // The next syllable, and the way the melody goes to it.
+  let next: { id: string; dir: Direction } | undefined
+  if (s.activeSyllable && !inIntro) {
+    const at = performance.syllables.indexOf(s.activeSyllable)
+    const after = at >= 0 ? performance.syllables[at + 1] : undefined
+    if (after && after.stanzaId === s.activeSyllable.stanzaId) {
+      const a = melody.pitch.get(s.activeSyllable.syllableId)
+      const b = melody.pitch.get(after.syllableId)
+      if (a !== undefined && b !== undefined) next = { id: after.syllableId, dir: b > a ? 'up' : b < a ? 'down' : 'same' }
+    }
+  }
+
+  // The music view shows the verse that is sung, or the verse that was chosen.
+  const [chosenVerse, setChosenVerse] = useState(0)
+  const shownVerse = activeStanzaId ? (s.activeStanza?.index ?? chosenVerse) : chosenVerse
+  const sopranoNotes = useMemo(() => performance.notes.filter((n) => n.voice === 'soprano'), [performance])
+  const activeNote = s.currentTick > 0 || playing ? noteAt(sopranoNotes, s.currentTick) : undefined
+  const tuneNoteStart = useMemo(() => new Map(tune.notes.map((n) => [n.id, n.start_tick])), [tune])
+  const seekNote = (noteId: string) => {
+    const cue = performance.stanzas[shownVerse]
+    const start = tuneNoteStart.get(noteId)
+    if (cue && start !== undefined) s.seek(cue.startTick + start)
+  }
+  const seekVerse = (i: number) => {
+    setChosenVerse(i)
+    const cue = performance.stanzas[i]
+    if (cue) s.seek(cue.startTick)
+  }
 
   const stanzaIndex = s.activeStanza ? s.activeStanza.index + 1 : 0
   const where = inIntro ? 'The tune, once through' : `Verse ${stanzaIndex} of ${performance.stanzas.length}`
 
   return (
     <>
-      <section className="lyrics" aria-label="Words">
-        {setting.stanzas.map((st, i) => (
-          <Stanza
-            key={st.stanza_id}
-            stanza={st}
-            number={i + 1}
-            psalmNumber={entry.number}
-            verses={versesOf.get(st.stanza_id) ?? []}
-            active={st.stanza_id === activeStanzaId}
-            tick={st.stanza_id === activeStanzaId ? s.currentTick : -1}
-            activeSyllableId={st.stanza_id === activeStanzaId ? s.activeSyllable?.syllableId : undefined}
-            syllableCue={syllableCue}
-            onLine={(lineId) => {
-              const t = lineStart.get(lineId)
-              if (t !== undefined) s.seek(t)
-            }}
+      <div className="view-bar">
+        <div className="segmented" role="group" aria-label="View">
+          <button className={mode === 'words' ? 'on' : ''} aria-pressed={mode === 'words'} onClick={() => chooseMode('words')}>
+            Words
+          </button>
+          <button className={mode === 'music' ? 'on' : ''} aria-pressed={mode === 'music'} onClick={() => chooseMode('music')}>
+            Music
+          </button>
+        </div>
+        {mode === 'words' && (
+          <label className="check" title="A dot over each syllable shows how high its note is">
+            <input type="checkbox" checked={shape} onChange={(e) => toggleShape(e.target.checked)} /> Melody shape
+          </label>
+        )}
+      </div>
+
+      {mode === 'music' ? (
+        <>
+          <div className="verse-pick" role="group" aria-label="Verse">
+            {performance.stanzas.map((st, i) => (
+              <button key={st.stanzaId} className={i === shownVerse ? 'on' : ''} aria-pressed={i === shownVerse} onClick={() => seekVerse(i)}>
+                {i + 1}
+              </button>
+            ))}
+          </div>
+          <Score
+            tune={tune}
+            transpose={transpose}
+            keyName={performance.key}
+            stanza={setting.stanzas[shownVerse]}
+            activeNoteId={activeNote?.sourceNoteId}
+            following={follow && playing}
+            onNote={seekNote}
           />
-        ))}
-      </section>
+        </>
+      ) : (
+        <section className={shape ? 'lyrics shape' : 'lyrics'} aria-label="Words">
+          {setting.stanzas.map((st, i) => (
+            <Stanza
+              key={st.stanza_id}
+              stanza={st}
+              number={i + 1}
+              psalmNumber={entry.number}
+              verses={versesOf.get(st.stanza_id) ?? []}
+              active={st.stanza_id === activeStanzaId}
+              tick={st.stanza_id === activeStanzaId ? s.currentTick : -1}
+              activeSyllableId={st.stanza_id === activeStanzaId ? s.activeSyllable?.syllableId : undefined}
+              next={st.stanza_id === activeStanzaId ? next : undefined}
+              height={shape ? melody.height : undefined}
+              syllableCue={syllableCue}
+              onLine={onLine}
+            />
+          ))}
+        </section>
+      )}
 
       <div className="player" role="region" aria-label="Player">
         <div className="player-row">
@@ -251,11 +341,14 @@ interface StanzaProps {
   active: boolean
   tick: number
   activeSyllableId: string | undefined
+  next: { id: string; dir: Direction } | undefined
+  /** The height of each syllable's note, from 0 (the lowest note of the tune) to 1. Undefined: no melody shape. */
+  height: Map<string, number> | undefined
   syllableCue: Map<string, SyllableCue>
   onLine: (lineId: string) => void
 }
 
-const Stanza = memo(function Stanza({ stanza, number, psalmNumber, verses, active, tick, activeSyllableId, syllableCue, onLine }: StanzaProps) {
+const Stanza = memo(function Stanza({ stanza, number, psalmNumber, verses, active, tick, activeSyllableId, next, height, syllableCue, onLine }: StanzaProps) {
   const first = verses[0]
   const last = verses[verses.length - 1]
   const range = first === undefined ? '' : first === last ? `${first}` : `${first}–${last}`
@@ -276,8 +369,15 @@ const Stanza = memo(function Stanza({ stanza, number, psalmNumber, verses, activ
               {tok.syllable_map.map((sy) => {
                 const cue = syllableCue.get(sy.id)
                 const state = !active || !cue ? '' : sy.id === activeSyllableId ? 'now' : cue.endTick <= tick ? 'sung' : ''
+                const h = height?.get(sy.id)
+                const isNext = next?.id === sy.id
                 return (
-                  <span key={sy.id} className={state ? `syl ${state}` : 'syl'}>
+                  <span
+                    key={sy.id}
+                    className={`syl${state ? ` ${state}` : ''}${isNext ? ' next' : ''}`}
+                    data-dir={isNext ? next.dir : undefined}
+                    style={h === undefined ? undefined : ({ '--h': h.toFixed(2) } as CSSProperties)}
+                  >
                     {sy.text}
                   </span>
                 )
@@ -316,3 +416,39 @@ function Icon({ d, fill }: { d: string; fill?: boolean }) {
   )
 }
 
+
+type Direction = 'up' | 'down' | 'same'
+
+/** The pitch of the first note of each syllable, and its height in the range of the tune. */
+function melodyShape(tune: TuneRecord, setting: PsalmSetting) {
+  const midi = new Map(tune.notes.map((n) => [n.id, n.midi]))
+  const low = Math.min(...tune.notes.map((n) => n.midi))
+  const high = Math.max(...tune.notes.map((n) => n.midi))
+  const pitch = new Map<string, number>()
+  const height = new Map<string, number>()
+  for (const st of setting.stanzas)
+    for (const line of st.lines)
+      for (const tok of line.tokens)
+        for (const sy of tok.syllable_map) {
+          const m = midi.get(sy.note_ids[0])
+          if (m === undefined) continue
+          pitch.set(sy.id, m)
+          height.set(sy.id, high > low ? (m - low) / (high - low) : 0.5)
+        }
+  return { pitch, height }
+}
+
+/** The note that sounds at a tick. The notes are in time order. */
+function noteAt<T extends { startTick: number; endTick: number }>(notes: T[], tick: number): T | undefined {
+  let lo = 0
+  let hi = notes.length - 1
+  let found: T | undefined
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1
+    if (notes[mid].startTick <= tick) {
+      found = notes[mid]
+      lo = mid + 1
+    } else hi = mid - 1
+  }
+  return found && tick < found.endTick ? found : undefined
+}
