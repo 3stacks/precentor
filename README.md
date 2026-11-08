@@ -16,6 +16,67 @@ npm run dev        # http://localhost:5180
 npm run build      # the static app in dist/
 ```
 
+## Deployment
+
+CI owns the deployment to Cloudflare Pages. Do not deploy from a workstation.
+
+1. A push to `main` starts the `Website` workflow. It runs the tests and builds `dist/`.
+2. When `Website` passes, the `Deploy to Cloudflare Pages` workflow starts.
+3. That workflow downloads the `dist/` artifact. It does not build again.
+4. It makes the Pages project `psalter` if the project does not exist.
+5. It deploys the artifact and the Pages Functions to the production branch `main`.
+6. It checks the app, the psalm data and `/a/boot.js` on the live site.
+
+A pull request from this repository also gets a preview. The job summary of the `Website` run
+shows the preview address.
+
+The workflows need two repository secrets:
+
+| Secret | Value |
+|--------|-------|
+| `CLOUDFLARE_API_TOKEN` | An API token with the permission Account, Cloudflare Pages, Edit |
+| `CLOUDFLARE_ACCOUNT_ID` | The account ID from the Cloudflare dashboard |
+
+`public/_headers` sets the cache rules on Pages.
+
+## Analytics
+
+The hosted app counts visits with Umami, as hearers.app does. Umami uses no cookies.
+
+- A Pages Function, `functions/a/[[path]].ts`, serves `/a/`. It forwards the tracker and the events
+  to Umami, so the Umami address stays secret. The code is in `functions/_lib/analytics.ts`.
+- `shared/analytics-loader.ts` holds the loader. `index.html` has a copy. A test makes sure that
+  the two copies are the same.
+- `track()` in `src/lib/track.ts` sends three events: `Psalm played`, `Tune chosen` and
+  `View chosen`.
+
+To turn on analytics, set these secrets on the Pages project:
+
+```bash
+npx wrangler pages secret put ANALYTICS_FORWARDING_URL --project-name=psalter
+npx wrangler pages secret put ANALYTICS_WEBSITE_ID --project-name=psalter
+```
+
+`ANALYTICS_FORWARDING_URL` is the Umami origin with `https://` and no path.
+`ANALYTICS_WEBSITE_ID` is the UUID of the Umami website for this app. Then run the deploy
+workflow again.
+
+Analytics counts only `psalter.pages.dev`. To count another domain, set `ANALYTICS_HOSTS` to a list
+of hosts with commas between them. Branch previews, `localhost` and self-hosted copies send
+nothing.
+
+## Docker
+
+GitHub Actions builds the image `ghcr.io/3stacks/psalter` for `linux/amd64` and `linux/arm64`.
+A push to `main` publishes the tag `latest`. A tag `v1.2.3` publishes the tag `1.2.3`.
+
+```bash
+docker run -d -p 8080:8080 ghcr.io/3stacks/psalter:latest
+```
+
+The image is nginx with the built app. The app keeps all settings in the browser, so the image
+needs no volume.
+
 ## Data
 
 The words, the tunes and the match of each syllable to its note come from

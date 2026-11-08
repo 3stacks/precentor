@@ -6,6 +6,7 @@ import { retargetSetting } from '../engine/retargetSetting.ts'
 import type { PsalmRecord, PsalmSetting, SettingStanza, TuneRecord } from '../engine/types.ts'
 import { useSingAlong } from '../engine/useSingAlong.ts'
 import { psalmHref } from '../router.ts'
+import { track } from '../lib/track.ts'
 import { useAsync } from '../useAsync.ts'
 import { Score } from './Score.tsx'
 
@@ -49,6 +50,7 @@ export function PsalmView({ psalmKey, tuneSlug }: { psalmKey: string; tuneSlug?:
   const { entry, psalm, index, tunes } = base
   const chooseTune = (slug: string) => {
     savePlaybackPreference(`tune:${psalmKey}`, slug)
+    track('Tune chosen', { psalm: psalmKey, tune: slug })
     location.replace(psalmHref(psalmKey, slug === entry.tune ? undefined : slug))
   }
   const changeKey = (step: number) => {
@@ -171,6 +173,7 @@ function Player({ performance, psalm, setting, tune, transpose, entry, tuneSlug,
   const chooseMode = (m: 'words' | 'music') => {
     setMode(m)
     savePlaybackPreference('view', m)
+    track('View chosen', { view: m })
   }
   const toggleShape = (on: boolean) => {
     setShape(on)
@@ -179,6 +182,13 @@ function Player({ performance, psalm, setting, tune, transpose, entry, tuneSlug,
   const melody = useMemo(() => melodyShape(tune, setting), [tune, setting])
 
   const playing = s.status === 'playing'
+  // One event for each psalm and tune that is played.
+  const counted = useRef(false)
+  useEffect(() => {
+    if (!playing || counted.current) return
+    counted.current = true
+    track('Psalm played', { psalm: entry.key, tune: tuneSlug })
+  }, [playing, entry.key, tuneSlug])
   const inIntro = s.currentTick < performance.introTicks
   const activeStanzaId = inIntro ? undefined : s.activeStanza?.stanzaId
   const activeLineId = s.activeLine?.lineId
