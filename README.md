@@ -7,6 +7,8 @@ parts and lights each syllable when you must sing it.
 In Scottish churches the precentor led the psalm singing, one line at a time. This app does the
 same.
 
+If Precentor helps you, you can support it on [Ko-fi](https://ko-fi.com/lukeboyle).
+
 ## Run
 
 The app needs Node 24 or later.
@@ -49,7 +51,7 @@ The hosted app counts visits with Umami, as hearers.app does. Umami uses no cook
 - `shared/analytics-loader.ts` holds the loader. `index.html` has a copy. A test makes sure that
   the two copies are the same.
 - `track()` in `src/lib/track.ts` sends three events: `Psalm played`, `Tune chosen` and
-  `View chosen`.
+  `View chosen`. A click on a Ko-fi link sends `Ko-fi`.
 
 To turn on analytics, set these secrets on the Pages project:
 

@@ -417,7 +417,7 @@ button.small,
 }
 
 /* The words. The sung syllable is lit, as on a lyric sheet. */
-.psalm-main {
+.app.with-player {
   /* Room for the player at the bottom. */
   padding-bottom: 200px;
 }
@@ -781,4 +781,13 @@ button.icon.on {
 .score-svg .now path {
   fill: oklch(44% 0.118 24);
   stroke: oklch(44% 0.118 24);
+}
+
+.foot {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 0 8px;
+  font-size: 0.875rem;
+  color: var(--muted);
 }
