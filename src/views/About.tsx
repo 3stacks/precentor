@@ -113,7 +113,7 @@ export function About({ section }: { section?: string }) {
           </li>
         </ul>
         <p>
-          If this app helps you, you can support it on <a href="https://ko-fi.com/lukeboyle">Ko-fi</a>.
+          If this app helps you, you can support it on <a href="https://ko-fi.com/lukeboyle" data-event="Ko-fi">Ko-fi</a>.
         </p>
       </section>
     </div>

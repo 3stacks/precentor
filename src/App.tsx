@@ -11,7 +11,7 @@ export function App() {
   }, [route])
   return (
     <>
-      <div className="app">
+      <div className={route.view === 'psalm' ? 'app with-player' : 'app'}>
       <header className="top">
         <a className="brand" href="#/">
           <Mark /> Precentor
@@ -21,9 +21,16 @@ export function App() {
           <a href="#/about">About</a>
         </nav>
       </header>
-      <main className={route.view === 'psalm' ? 'main psalm-main' : 'main'}>
+      <main className="main">
         {route.view === 'psalm' ? <PsalmView key={route.key} psalmKey={route.key} tuneSlug={route.tune} /> : route.view === 'about' ? <About section={route.section} /> : <Library />}
       </main>
+      <footer className="foot">
+        <a href="https://ko-fi.com/lukeboyle" data-event="Ko-fi">
+          Support Precentor on Ko-fi
+        </a>
+        <span aria-hidden="true">·</span>
+        <a href="#/about">About</a>
+      </footer>
       </div>
     </>
   )
