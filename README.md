@@ -7,6 +7,8 @@ parts and lights each syllable when you must sing it.
 In Scottish churches the precentor led the psalm singing, one line at a time. This app does the
 same.
 
+Use the app at [precentor.app](https://precentor.app).
+
 If Precentor helps you, you can support it on [Ko-fi](https://ko-fi.com/lukeboyle).
 
 ## Run
