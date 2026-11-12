@@ -2,3 +2,25 @@ node_modules
 dist
 .cache
 *.local
+
+# Expo
+.expo/
+web-build/
+expo-env.d.ts
+
+# Made by scripts/link-corpus.mjs from public/corpus/
+assets/corpus/
+
+# Native folders that expo prebuild makes
+/ios
+/android
+
+# Native signing files
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+.metro-health-check*
+*.tsbuildinfo

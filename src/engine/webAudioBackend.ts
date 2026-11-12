@@ -5,6 +5,7 @@ import {
   VOICE_LEVELS,
   type PerformanceVoice,
 } from "./voices";
+import { playThroughSilentSwitch } from "./audioSession";
 
 export type RuntimeAudioState =
   | AudioContextState
@@ -67,7 +68,9 @@ function createRoomImpulse(context: AudioContext): AudioBuffer {
   const impulse = context.createBuffer(2, length, context.sampleRate);
 
   for (let channel = 0; channel < impulse.numberOfChannels; channel += 1) {
-    const samples = impulse.getChannelData(channel);
+    // Precentor: fill a local array and copy it in. react-native-audio-api
+    // gives a view of native memory from getChannelData().
+    const samples = new Float32Array(length);
     let seed = 0x1650 + channel * 0x9e37;
 
     for (let index = 0; index < samples.length; index += 1) {
@@ -78,9 +81,27 @@ function createRoomImpulse(context: AudioContext): AudioBuffer {
       const decay = (1 - position) ** 3.2;
       samples[index] = noise * decay;
     }
+    impulse.copyToChannel(samples, channel);
   }
 
   return impulse;
+}
+
+// Precentor: one onstatechange handler for each context, shared by every backend.
+const stateListeners = new WeakMap<object, Set<() => void>>();
+
+function addStateListener(context: AudioContext, listener: () => void): () => void {
+  let listeners = stateListeners.get(context);
+  if (!listeners) {
+    const set = new Set<() => void>();
+    listeners = set;
+    stateListeners.set(context, set);
+    (context as { onstatechange: (() => void) | null }).onstatechange = () => {
+      for (const each of [...set]) each();
+    };
+  }
+  listeners.add(listener);
+  return () => listeners.delete(listener);
 }
 
 export class WebAudioBackend implements AudioBackend {
@@ -102,12 +123,13 @@ export class WebAudioBackend implements AudioBackend {
     const AudioContextConstructor =
       audioGlobal.AudioContext ?? audioGlobal.webkitAudioContext;
 
-    if (!AudioContextConstructor) {
+    // Precentor: the native app passes the context of react-native-audio-api.
+    if (!context && !AudioContextConstructor) {
       throw new Error("This browser does not provide the Web Audio API.");
     }
 
     this.#ownsContext = !context;
-    this.#context = context ?? new AudioContextConstructor({
+    this.#context = context ?? new AudioContextConstructor!({
       latencyHint: "interactive",
     });
     this.#principalWave = createOrganWave(this.#context, [
@@ -189,7 +211,10 @@ export class WebAudioBackend implements AudioBackend {
       !Number.isFinite(contextTime) ||
       !Number.isFinite(performanceTime) ||
       contextTime < 0 ||
-      performanceTime < 0
+      performanceTime < 0 ||
+      // Precentor: the timestamp is of a past sample. Some WebKit builds give a
+      // performanceTime in the future, which would hold the player at the start.
+      performanceTime > performance.now() + 50
     ) {
       return this.#fallbackOutputTimeAt(localPerformanceTimeMs);
     }
@@ -201,6 +226,7 @@ export class WebAudioBackend implements AudioBackend {
   }
 
   async resume(): Promise<void> {
+    playThroughSilentSwitch();
     if (this.#context.state === "closed") {
       throw new Error("The audio device has already been closed.");
     }
@@ -332,6 +358,10 @@ export class WebAudioBackend implements AudioBackend {
     listener: (state: RuntimeAudioState) => void,
   ): () => void {
     const handleStateChange = () => listener(this.state);
+    // Precentor: react-native-audio-api has onstatechange, not addEventListener.
+    if (typeof this.#context.addEventListener !== "function") {
+      return addStateListener(this.#context, handleStateChange);
+    }
     this.#context.addEventListener("statechange", handleStateChange);
     return () =>
       this.#context.removeEventListener(
@@ -364,6 +394,8 @@ export function createWebAudioBackend(): AudioBackend {
   const audioGlobal = globalThis as AudioContextWithWebkit;
   const Constructor = audioGlobal.AudioContext ?? audioGlobal.webkitAudioContext;
   if (!Constructor) throw new Error("This browser does not provide the Web Audio API.");
+  // Before the context exists, so that iOS makes it in the playback session.
+  playThroughSilentSwitch();
   if (!playbackContext || playbackContext.state === "closed" || playbackConstructor !== Constructor) {
     playbackContext = new Constructor({ latencyHint: "interactive" });
     playbackConstructor = Constructor;

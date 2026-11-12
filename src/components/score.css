@@ -1,0 +1,38 @@
+/* The sheet music. The card is white in the light and the dark theme. */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+.score {
+  overflow: hidden;
+  padding: 14px 10px;
+  background: #fff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-sizing: border-box;
+  font-family: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+.score-error {
+  color: #b91c1c;
+  margin: 8px 0 0;
+}
+.score-svg {
+  overflow: hidden;
+}
+.score-svg svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.score-svg .abcjs-note,
+.score-svg .abcjs-lyric {
+  cursor: pointer;
+}
+.score-svg .now,
+.score-svg .now path {
+  fill: #883231;
+  stroke: #883231;
+}

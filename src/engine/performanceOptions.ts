@@ -3,6 +3,8 @@
 
 import references from "../data/tempo-references.json";
 import type { CompiledPerformance } from "./compilePerformance";
+// Precentor: localStorage on the web, AsyncStorage on iOS and Android.
+import { getItem, setItem } from "../lib/storage";
 
 export interface TempoReference {
   bpm: number;
@@ -55,11 +57,11 @@ export function nextPsalmNumber(number: number): number | null {
 
 export function readPlaybackPreference<T>(key: string, fallback: T): T {
   try {
-    const stored = localStorage.getItem(`precentor:${key}`);
+    const stored = getItem(`precentor:${key}`);
     return stored === null ? fallback : JSON.parse(stored) as T;
   } catch { return fallback; }
 }
 
 export function savePlaybackPreference(key: string, value: unknown): void {
-  try { localStorage.setItem(`precentor:${key}`, JSON.stringify(value)); } catch { /* Playback works without storage. */ }
+  try { setItem(`precentor:${key}`, JSON.stringify(value)); } catch { /* Playback works without storage. */ }
 }

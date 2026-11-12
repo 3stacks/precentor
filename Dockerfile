@@ -1,10 +1,12 @@
 # syntax=docker/dockerfile:1
 
-# Build the app once, on the build machine's own platform: the output is
+# Build the web app once, on the build machine's own platform: the output is
 # plain files, the same on every architecture.
 FROM --platform=$BUILDPLATFORM node:24-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
+COPY scripts ./scripts
+COPY public ./public
 RUN npm ci --no-audit --no-fund
 COPY . .
 RUN npm test && npm run build
