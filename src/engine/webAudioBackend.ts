@@ -5,6 +5,7 @@ import {
   VOICE_LEVELS,
   type PerformanceVoice,
 } from "./voices";
+import { playThroughSilentSwitch } from "./audioSession";
 
 export type RuntimeAudioState =
   | AudioContextState
@@ -201,6 +202,7 @@ export class WebAudioBackend implements AudioBackend {
   }
 
   async resume(): Promise<void> {
+    playThroughSilentSwitch();
     if (this.#context.state === "closed") {
       throw new Error("The audio device has already been closed.");
     }
@@ -364,6 +366,8 @@ export function createWebAudioBackend(): AudioBackend {
   const audioGlobal = globalThis as AudioContextWithWebkit;
   const Constructor = audioGlobal.AudioContext ?? audioGlobal.webkitAudioContext;
   if (!Constructor) throw new Error("This browser does not provide the Web Audio API.");
+  // Before the context exists, so that iOS makes it in the playback session.
+  playThroughSilentSwitch();
   if (!playbackContext || playbackContext.state === "closed" || playbackConstructor !== Constructor) {
     playbackContext = new Constructor({ latencyHint: "interactive" });
     playbackConstructor = Constructor;
