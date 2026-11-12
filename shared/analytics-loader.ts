@@ -1,4 +1,4 @@
-// The analytics loader, as on hearers.app. index.html has a copy in its <head>.
+// The analytics loader, as on hearers.app. public/index.html has a copy in its <head>.
 // tests/analytics.test.ts checks that the two copies are the same.
 //
 // - window.plausible(name, { props }) queues events until the tracker loads.

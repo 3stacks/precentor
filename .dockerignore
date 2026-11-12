@@ -1,7 +1,11 @@
 node_modules
 dist
 .cache
+.expo
 .git
 .github
 *.local
+assets/corpus
+ios
+android
 Dockerfile

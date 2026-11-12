@@ -9,11 +9,11 @@ import {
   findScheduleStartIndex,
   type CompiledPerformance,
 } from "./compilePerformance";
-import {
-  createWebAudioBackend,
-  type AudioBackend,
-  type VoiceHandle,
-} from "./webAudioBackend";
+// Precentor: the backend is Web Audio on the web and react-native-audio-api on
+// iOS and Android. The timers use the globals, which React Native also has.
+import { onAppHidden } from "./appHidden";
+import { createAudioBackend } from "./createAudioBackend";
+import type { AudioBackend, VoiceHandle } from "./webAudioBackend";
 
 export type SingAlongStatus =
   | "idle"
@@ -65,9 +65,9 @@ export function useSingAlong(performance: CompiledPerformance) {
 
   const backendRef = useRef<AudioBackend | null>(null);
   const removeBackendListenerRef = useRef<(() => void) | null>(null);
-  const schedulerRef = useRef<number | null>(null);
+  const schedulerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const animationRef = useRef<number | null>(null);
-  const transportTimerRef = useRef<number | null>(null);
+  const transportTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingTransportRef = useRef<PendingTransport | null>(null);
   const nextNoteIndexRef = useRef(0);
   const anchorTickRef = useRef(0);
@@ -102,11 +102,11 @@ export function useSingAlong(performance: CompiledPerformance) {
 
   const stopTimers = useCallback(() => {
     if (schedulerRef.current !== null) {
-      window.clearInterval(schedulerRef.current);
+      globalThis.clearInterval(schedulerRef.current);
       schedulerRef.current = null;
     }
     if (animationRef.current !== null) {
-      window.cancelAnimationFrame(animationRef.current);
+      globalThis.cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
   }, []);
@@ -305,7 +305,9 @@ export function useSingAlong(performance: CompiledPerformance) {
     }
 
     updateTick(nextTick);
-    animationRef.current = window.requestAnimationFrame(frame);
+    // Precentor: the frame callback asks for the next frame. The React Compiler lint does not allow it.
+    // eslint-disable-next-line react-hooks/immutability
+    animationRef.current = globalThis.requestAnimationFrame(frame);
   }, [
     endPlayback,
     performance.durationTicks,
@@ -318,7 +320,7 @@ export function useSingAlong(performance: CompiledPerformance) {
   const startScheduler = useCallback(() => {
     scheduleWindow();
     if (schedulerRef.current === null) {
-      schedulerRef.current = window.setInterval(
+      schedulerRef.current = globalThis.setInterval(
         scheduleWindow,
         SCHEDULER_INTERVAL_MS,
       );
@@ -328,13 +330,13 @@ export function useSingAlong(performance: CompiledPerformance) {
   const startTimers = useCallback(() => {
     stopTimers();
     startScheduler();
-    animationRef.current = window.requestAnimationFrame(frame);
+    animationRef.current = globalThis.requestAnimationFrame(frame);
   }, [frame, startScheduler, stopTimers]);
 
   const ensureBackend = useCallback(() => {
     if (backendRef.current) return backendRef.current;
 
-    const backend = createWebAudioBackend();
+    const backend = createAudioBackend();
     backend.setVolume(volumeRef.current);
     removeBackendListenerRef.current = backend.onStateChange((audioState) => {
       const ready = audioState === "running";
@@ -349,7 +351,7 @@ export function useSingAlong(performance: CompiledPerformance) {
         backend.stopAll();
         updateTick(pausedAt);
         updateStatus("paused");
-        setError("Audio was paused by the browser. Press play to resume.");
+        setError("The device paused the audio. Press play to continue.");
       }
     });
     backendRef.current = backend;
@@ -359,16 +361,16 @@ export function useSingAlong(performance: CompiledPerformance) {
   const prepareAudio = useCallback(async () => {
     const backend = ensureBackend();
     if (audioReadyRef.current && backend.state === "running") return;
-    let resumeTimer: number | undefined;
+    let resumeTimer: ReturnType<typeof setTimeout> | undefined;
     try {
       await Promise.race([
         backend.resume(),
         new Promise<never>((_, reject) => {
-          resumeTimer = window.setTimeout(
+          resumeTimer = globalThis.setTimeout(
             () =>
               reject(
                 new Error(
-                  "The browser did not unlock its audio output in time.",
+                  "The audio output did not start in time.",
                 ),
               ),
             4_000,
@@ -376,7 +378,7 @@ export function useSingAlong(performance: CompiledPerformance) {
         }),
       ]);
     } finally {
-      if (resumeTimer !== undefined) window.clearTimeout(resumeTimer);
+      if (resumeTimer !== undefined) globalThis.clearTimeout(resumeTimer);
     }
     if (disposedRef.current) return;
     audioReadyRef.current = true;
@@ -385,7 +387,7 @@ export function useSingAlong(performance: CompiledPerformance) {
 
   const clearTransportTimer = useCallback(() => {
     if (transportTimerRef.current !== null) {
-      window.clearTimeout(transportTimerRef.current);
+      globalThis.clearTimeout(transportTimerRef.current);
       transportTimerRef.current = null;
     }
   }, []);
@@ -435,7 +437,7 @@ export function useSingAlong(performance: CompiledPerformance) {
       const remaining =
         pending.effectiveAtLocalMs - globalThis.performance.now();
       if (remaining > 1) {
-        transportTimerRef.current = window.setTimeout(check, remaining);
+        transportTimerRef.current = globalThis.setTimeout(check, remaining);
         return;
       }
       applyPendingTransport(pending);
@@ -445,7 +447,7 @@ export function useSingAlong(performance: CompiledPerformance) {
       0,
       pending.effectiveAtLocalMs - globalThis.performance.now(),
     );
-    transportTimerRef.current = window.setTimeout(check, delay);
+    transportTimerRef.current = globalThis.setTimeout(check, delay);
   }, [applyPendingTransport]);
 
   const scheduleTransport = useCallback(async (
@@ -607,7 +609,7 @@ export function useSingAlong(performance: CompiledPerformance) {
       audioReadyRef.current = false;
       setAudioReady(false);
       updateStatus("error");
-      setError(`${message} Check this tab’s audio permission and try again.`);
+      setError(`${message} Make sure that this device can play sound, then try again.`);
     }
   }, [
     cancelPendingTransport,
@@ -731,15 +733,9 @@ export function useSingAlong(performance: CompiledPerformance) {
   );
 
   useEffect(() => {
-    const onVisibilityChange = () => {
-      if (document.hidden && statusRef.current === "playing") pause();
-    };
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    return () =>
-      document.removeEventListener(
-        "visibilitychange",
-        onVisibilityChange,
-      );
+    return onAppHidden(() => {
+      if (statusRef.current === "playing") pause();
+    });
   }, [pause]);
 
   useEffect(() => {

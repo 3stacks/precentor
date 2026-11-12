@@ -1,5 +1,8 @@
 # Cloudflare Pages. Hashed files never change. The app shell and its service
 # worker must revalidate, so that an update reaches every visitor.
+/_expo/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
@@ -10,6 +13,13 @@
   Cache-Control: no-cache
 
 /
+  Cache-Control: no-cache
+
+# Each path of the app is index.html. Pages serves it, because the build has no 404.html.
+/psalm/*
+  Cache-Control: no-cache
+
+/about*
   Cache-Control: no-cache
 
 # The psalm data changes only with a new import, but keep it fresh for a day.

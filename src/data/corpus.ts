@@ -1,4 +1,5 @@
 import type { PsalmRecord, PsalmSetting, TuneRecord } from '../engine/types.ts'
+import { readCorpusFile } from './corpusSource'
 
 /** public/corpus/index.json, written by scripts/import-corpus.mjs. */
 export interface PsalmEntry {
@@ -38,10 +39,7 @@ const cache = new Map<string, Promise<unknown>>()
 function getJson<T>(path: string): Promise<T> {
   let p = cache.get(path)
   if (!p) {
-    p = fetch(`corpus/${path}`).then((r) => {
-      if (!r.ok) throw new Error(`${path}: ${r.status}`)
-      return r.json()
-    })
+    p = readCorpusFile(path)
     p.catch(() => cache.delete(path))
     cache.set(path, p)
   }

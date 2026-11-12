@@ -1,6 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+'use dom'
+
+// The tune as sheet music, from abcjs. The note that sounds now is lit, and a
+// tap on a note goes to that note.
+//
+// abcjs draws SVG into the DOM. On the web this file renders as it is. On iOS
+// and Android it is an Expo DOM component: it renders in a web view, and the
+// function props call back into the app.
+import type { DOMProps } from 'expo/dom'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { SettingStanza, TuneRecord } from '../engine/types.ts'
 import { tuneToAbc } from '../music/abc.ts'
+import './score.css'
 
 interface Props {
   tune: TuneRecord
@@ -12,13 +22,15 @@ interface Props {
   /** The tune note that sounds now. */
   activeNoteId: string | undefined
   following: boolean
-  onNote: (noteId: string) => void
+  onNote: (noteId: string) => Promise<void>
+  /** The top and the bottom of the lit note, in pixels from the top of the score. The app scrolls to it. */
+  onFollow: (top: number, bottom: number) => Promise<void>
+  dom?: DOMProps
 }
 
 type Head = { el: SVGElement[]; abselem: unknown }
 
-/** The tune as sheet music, from abcjs. The note that sounds now is lit. */
-export function Score({ tune, transpose, keyName, stanza, activeNoteId, following, onNote }: Props) {
+export default function Score({ tune, transpose, keyName, stanza, activeNoteId, following, onNote, onFollow }: Props) {
   const card = useRef<HTMLDivElement>(null)
   const box = useRef<HTMLDivElement>(null)
   const heads = useRef<Head[]>([])
@@ -42,7 +54,11 @@ export function Score({ tune, transpose, keyName, stanza, activeNoteId, followin
   const narrow = width > 0 && width < 560
   const score = useMemo(() => tuneToAbc(tune, transpose, keyName, stanza, narrow), [tune, transpose, keyName, stanza, narrow])
   const onNoteRef = useRef(onNote)
-  onNoteRef.current = onNote
+  const onFollowRef = useRef(onFollow)
+  useLayoutEffect(() => {
+    onNoteRef.current = onNote
+    onFollowRef.current = onFollow
+  })
 
   useEffect(() => {
     let live = true
@@ -60,7 +76,7 @@ export function Score({ tune, transpose, keyName, stanza, activeNoteId, followin
           paddingtop: 0,
           clickListener: (elem) => {
             const i = heads.current.findIndex((h) => h.abselem === elem.abselem)
-            if (i >= 0) onNoteRef.current(score.sopranoHeads[i])
+            if (i >= 0) void onNoteRef.current(score.sopranoHeads[i])
           },
         })
         // The soprano: voice 1 of stave 1 in each line.
@@ -95,17 +111,16 @@ export function Score({ tune, transpose, keyName, stanza, activeNoteId, followin
       }
     })
     const first = lit.current[0]
-    if (following && first) {
+    if (following && first && card.current) {
+      const top = card.current.getBoundingClientRect().top
       const r = first.getBoundingClientRect()
-      const bar = document.querySelector<HTMLElement>('.player')
-      const bottom = window.innerHeight - (bar?.offsetHeight ?? 0)
-      if (r.top < 70 || r.bottom > bottom - 20) window.scrollBy({ top: r.top - (70 + (bottom - 70) * 0.3), behavior: 'smooth' })
+      void onFollowRef.current(r.top - top, r.bottom - top)
     }
   }, [activeNoteId, ready, score, following])
 
   return (
-    <div className="score card" ref={card}>
-      {error ? <p className="error-text">Could not draw the music. {error}</p> : null}
+    <div className="score" ref={card} data-testid="score">
+      {error ? <p className="score-error">Could not draw the music. {error}</p> : null}
       <div ref={box} className="score-svg" />
     </div>
   )
