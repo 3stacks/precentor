@@ -42,6 +42,8 @@ for (const file of files) {
   }
 }
 
+// In a Docker build, npm ci runs this before src/ is copied in.
+mkdirSync(dirname(mapFile), { recursive: true })
 const lines = files.map((file) => `  '${file}': require('../../assets/corpus/${file.replace(/\.json$/, '.corpus')}'),`)
 writeFileSync(
   mapFile,
