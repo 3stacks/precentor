@@ -1,5 +1,5 @@
 import { Fragment, useRef, type ReactNode } from 'react'
-import { StyleSheet, Text, View, type ScrollViewInstance } from 'react-native'
+import { Platform, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native'
 import { loadIndex } from '../data/corpus.ts'
 import { psalmHref } from '../lib/routes.ts'
 import { fonts, useColors } from '../lib/theme.ts'
@@ -117,13 +117,16 @@ export function About({ section }: { section?: string }) {
         <Li>
           <ExternalLink href="https://hearers.app">Hearers</ExternalLink> helps you memorise the catechisms, the creeds and Scripture.
         </Li>
-        <P>
-          If this app helps you, you can support it on{' '}
-          <ExternalLink href={KOFI} event="Ko-fi">
-            Ko-fi
-          </ExternalLink>
-          .
-        </P>
+        {/* The App Store does not allow a link to outside payments, so iOS does not show it. */}
+        {Platform.OS !== 'ios' && (
+          <P>
+            If this app helps you, you can support it on{' '}
+            <ExternalLink href={KOFI} event="Ko-fi">
+              Ko-fi
+            </ExternalLink>
+            .
+          </P>
+        )}
       </Card>
     </Page>
   )

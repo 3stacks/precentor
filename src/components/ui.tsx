@@ -102,14 +102,25 @@ export function Footer() {
   const c = useColors()
   return (
     <View style={styles.foot}>
-      <ExternalLink href={KOFI} event="Ko-fi" style={{ fontSize: 14 }}>
-        Support Precentor on Ko-fi
-      </ExternalLink>
+      {/* The App Store does not allow a link to outside payments, so iOS does not show it. */}
+      {Platform.OS !== 'ios' && (
+        <>
+          <ExternalLink href={KOFI} event="Ko-fi" style={{ fontSize: 14 }}>
+            Support Precentor on Ko-fi
+          </ExternalLink>
+          <Text style={{ color: c.muted }} aria-hidden>
+            ·
+          </Text>
+        </>
+      )}
+      <A href="/about" style={{ fontSize: 14 }}>
+        About
+      </A>
       <Text style={{ color: c.muted }} aria-hidden>
         ·
       </Text>
-      <A href="/about" style={{ fontSize: 14 }}>
-        About
+      <A href="/privacy" style={{ fontSize: 14 }}>
+        Privacy
       </A>
     </View>
   )
