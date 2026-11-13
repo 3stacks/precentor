@@ -1,6 +1,6 @@
 import Slider from '@react-native-community/slider'
 import { Link, Stack, router, type Href } from 'expo-router'
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from 'react'
 import { Modal, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent, type ScrollViewInstance } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Path } from 'react-native-svg'
@@ -381,7 +381,7 @@ function Player({ performance, psalm, setting, tune, transpose, entry, tuneSlug,
                     <Button key={st.stanzaId} label={`${i + 1}`} on={i === shownVerse} onPress={() => seekVerse(i)} style={styles.verseButton} />
                   ))}
                 </View>
-                <Score
+                <ScoreView
                   tune={tune}
                   transpose={transpose}
                   keyName={performance.key}
@@ -390,7 +390,6 @@ function Player({ performance, psalm, setting, tune, transpose, entry, tuneSlug,
                   following={follow && playing}
                   onNote={seekNote}
                   onFollow={onFollow}
-                  dom={{ matchContents: true, scrollEnabled: false, style: { backgroundColor: 'transparent' } }}
                 />
               </View>
             ) : (
@@ -510,6 +509,23 @@ interface StanzaProps {
 }
 
 const ARROW: Record<Direction, string> = { up: '▲', down: '▼', same: '▶' }
+
+type ScoreProps = Omit<ComponentProps<typeof Score>, 'dom' | 'onReady'>
+const SCORE_DOM = { matchContents: true, scrollEnabled: false, style: { backgroundColor: 'transparent' } } as const
+
+/**
+ * On iOS and Android, Score renders in a web view, and Expo sends the props to it at each render.
+ * A send before the web view is on the screen fails with "Unable to find the 'DomWebView' view".
+ * During playback the screen renders at each tick, so open Music while a psalm plays caused that error.
+ * The score keeps its first props until it says that it is ready, and renders again only when a prop changes.
+ */
+const ScoreView = memo(function ScoreView(props: ScoreProps) {
+  const [ready, setReady] = useState(false)
+  const onReady = useCallback(async () => setReady(true), [])
+  const [first] = useState(props)
+  const shown = ready ? props : first
+  return useMemo(() => <Score {...shown} onReady={onReady} dom={SCORE_DOM} />, [shown, onReady])
+})
 
 const Stanza = memo(function Stanza({ stanza, number, psalmNumber, verses, active, tick, activeSyllableId, next, height, syllableCue, onLine, onStanzaLayout, onLineLayout, colors: c }: StanzaProps) {
   const first = verses[0]
