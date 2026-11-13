@@ -1,0 +1,13 @@
+{
+  "bg": ["#9a3a38", "#4a1716"],
+  "accent": "#f4cdc9",
+  "ink": "#ffffff",
+  "sub": "#f4dcd9",
+  "motif": "staff",
+  "panels": [
+    { "title": "Sing the psalms\nof 1650", "body": "Every psalm of the Scottish Psalter,\nwith the second versions.", "shot": "raw/list.png" },
+    { "title": "Follow each\nsyllable", "body": "The player lights each syllable\nas the tune plays.", "shot": "raw/playing.png" },
+    { "title": "Choose\nthe tune", "body": "A choice of tunes\nfor each psalm.", "shot": "raw/tunes.png" },
+    { "title": "Read\nthe music", "body": "The score of each tune,\nverse by verse.", "shot": "raw/music.png" }
+  ]
+}
