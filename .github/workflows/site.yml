@@ -34,7 +34,7 @@ jobs:
       contents: read
       deployments: write
     env:
-      PROJECT: precentor
+      PROJECT: precentor-app
     steps:
       - uses: actions/checkout@v4
 
