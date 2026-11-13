@@ -56,8 +56,11 @@ name: Psalm 23, the player, the music and About
 # The music view.
 - tapOn:
     id: view-music
-- waitForAnimationToEnd:
-    timeout: 5000
+# The score draws in a web view. Wait for the words under the notes.
+- extendedWaitUntil:
+    visible: .*LORD.*
+    timeout: 30000
+    optional: true
 - takeScreenshot: store-04-music
 - tapOn:
     id: view-words
