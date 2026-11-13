@@ -14,6 +14,7 @@ const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 // Each store gets its own slot size and layout.
 const TARGETS = {
   ios: { W: 1320, H: 2868, phoneW: 0.8, phoneTop: 0.215, title: 104, body: 46, island: true },
+  'ios-6.3': { W: 1206, H: 2622, phoneW: 0.8, phoneTop: 0.215, title: 95, body: 42, island: true },
   play: { W: 1080, H: 1920, phoneW: 0.64, phoneTop: 0.245, title: 80, body: 36, island: false },
 }
 
