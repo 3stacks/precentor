@@ -6,6 +6,9 @@ body {
   background: transparent;
 }
 .score {
+  /* In the web view of iOS and Android, the root element shrinks the card to its content.
+     With no music yet, the card had no width, so the music did not draw. */
+  width: 100%;
   overflow: hidden;
   padding: 14px 10px;
   background: #fff;
