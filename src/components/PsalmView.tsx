@@ -15,7 +15,7 @@ import { psalmHref } from '../lib/routes.ts'
 import { fonts, MAX_WIDTH, useColors, type Colors } from '../lib/theme.ts'
 import { track } from '../lib/track.ts'
 import { useAsync } from '../lib/useAsync.ts'
-import Score from './Score.tsx'
+import Score from './ScoreHost'
 import { Button, Card, Empty, ExternalLink, H1, Page, T } from './ui.tsx'
 
 const SIB = 'https://haddingtonbible.org'

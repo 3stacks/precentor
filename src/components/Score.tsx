@@ -6,6 +6,7 @@
 // abcjs draws SVG into the DOM. On the web this file renders as it is. On iOS
 // and Android it is an Expo DOM component: it renders in a web view, and the
 // function props call back into the app.
+import abcjs from 'abcjs'
 import type { DOMProps } from 'expo/dom'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { SettingStanza, TuneRecord } from '../engine/types.ts'
@@ -45,11 +46,14 @@ export default function Score({ tune, transpose, keyName, stanza, activeNoteId, 
     // Measure the card. abcjs sets a width on the element that it draws into.
     const el = card.current
     if (!el) return
-    const ro = new ResizeObserver(() => {
+    const measure = () => {
       const cs = getComputedStyle(el)
       const inner = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)
-      setWidth(Math.floor(inner / 10) * 10)
-    })
+      setWidth(Math.max(0, Math.floor(inner / 10) * 10))
+    }
+    // Measure now too. In a web view the observer can be late.
+    measure()
+    const ro = new ResizeObserver(measure)
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
@@ -68,11 +72,12 @@ export default function Score({ tune, transpose, keyName, stanza, activeNoteId, 
   })
 
   useEffect(() => {
-    let live = true
-    import('abcjs')
-      .then(({ default: abcjs }) => {
-        if (!live || !box.current || !width) return
-        const visual = abcjs.renderAbc(box.current, score.abc, {
+    const el = box.current
+    if (!el || !width) return
+    // Draw into the DOM, then mark the score as drawn.
+    const draw = () => {
+      try {
+        const visual = abcjs.renderAbc(el, score.abc, {
           add_classes: true,
           // Lay out at the width of the card. If a line needs more room, abcjs scales it down to fit.
           responsive: 'resize',
@@ -90,7 +95,11 @@ export default function Score({ tune, transpose, keyName, stanza, activeNoteId, 
         const found: Head[] = []
         for (const line of visual[0]?.lines ?? [])
           for (const item of line.staff?.[0]?.voices?.[0] ?? []) {
-            const e = item as { el_type?: string; rest?: unknown; abselem?: { elemset?: SVGElement[] } }
+            const e = item as {
+              el_type?: string
+              rest?: unknown
+              abselem?: { elemset?: SVGElement[] }
+            }
             if (e.el_type === 'note' && !e.rest && e.abselem) found.push({ el: e.abselem.elemset ?? [], abselem: e.abselem })
           }
         if (found.length !== score.sopranoHeads.length) console.warn(`score: ${found.length} soprano heads, expected ${score.sopranoHeads.length}`)
@@ -98,11 +107,11 @@ export default function Score({ tune, transpose, keyName, stanza, activeNoteId, 
         lit.current = []
         setError(undefined)
         setReady((r) => r + 1)
-      })
-      .catch((e: Error) => live && setError(e.message))
-    return () => {
-      live = false
+      } catch (e) {
+        setError((e as Error).message)
+      }
     }
+    draw()
   }, [score, width, narrow])
 
   // Light the note that sounds now.
