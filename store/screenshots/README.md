@@ -3,6 +3,8 @@
 Upload the files in their order. They are slices of one wide picture, so the order matters.
 
 - `ios/screenshot-1.png` to `ios/screenshot-4.png`: App Store, 6.9-inch iPhone, 1320 × 2868.
+- `ios-6.3/screenshot-1.png` to `ios-6.3/screenshot-4.png`: App Store, 6.3-inch iPhone, 1206 × 2622.
+  Use this set if App Store Connect asks for the 6.1-inch or the 6.3-inch display.
 - `play/screenshot-1.png` to `play/screenshot-4.png`: Google Play, phone, 1080 × 1920.
 
 Each `panorama.png` is the whole picture. Keep it for reference.
