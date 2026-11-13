@@ -511,7 +511,10 @@ interface StanzaProps {
 const ARROW: Record<Direction, string> = { up: '▲', down: '▼', same: '▶' }
 
 type ScoreProps = Omit<ComponentProps<typeof Score>, 'dom' | 'onReady'>
-const SCORE_DOM = { matchContents: true, scrollEnabled: false, style: { backgroundColor: 'transparent' } } as const
+// matchContents sets the width and the height of the web view from its page. The page takes the width
+// of the web view, so the score started at no width and never drew. The full width of the column
+// stops that loop. The height still comes from the page.
+const SCORE_DOM = { matchContents: true, scrollEnabled: false, containerStyle: { width: '100%' }, style: { backgroundColor: 'transparent' } } as const
 
 /**
  * On iOS and Android, Score renders in a web view, and Expo sends the props to it at each render.
