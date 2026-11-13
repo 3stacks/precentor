@@ -25,12 +25,14 @@ interface Props {
   onNote: (noteId: string) => Promise<void>
   /** The top and the bottom of the lit note, in pixels from the top of the score. The app scrolls to it. */
   onFollow: (top: number, bottom: number) => Promise<void>
+  /** The score is on the screen. On iOS and Android, the web view is ready for new props. */
+  onReady?: () => Promise<void>
   dom?: DOMProps
 }
 
 type Head = { el: SVGElement[]; abselem: unknown }
 
-export default function Score({ tune, transpose, keyName, stanza, activeNoteId, following, onNote, onFollow }: Props) {
+export default function Score({ tune, transpose, keyName, stanza, activeNoteId, following, onNote, onFollow, onReady }: Props) {
   const card = useRef<HTMLDivElement>(null)
   const box = useRef<HTMLDivElement>(null)
   const heads = useRef<Head[]>([])
@@ -50,6 +52,11 @@ export default function Score({ tune, transpose, keyName, stanza, activeNoteId, 
     })
     ro.observe(el)
     return () => ro.disconnect()
+  }, [])
+  useEffect(() => {
+    void onReady?.()
+    // Only once, when the score mounts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const narrow = width > 0 && width < 560
   const score = useMemo(() => tuneToAbc(tune, transpose, keyName, stanza, narrow), [tune, transpose, keyName, stanza, narrow])
