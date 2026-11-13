@@ -96,8 +96,7 @@ No account is needed. Open a psalm and tap Play. Choose another tune from the tu
 | Play feature graphic | 1024 × 500 | Required. `store/feature-graphic.png` |
 | Play icon | 512 × 512 | Required. `store/play-icon.png` |
 
-Take the screenshots on the iPhone 16 Pro Max simulator, in a development build, because Expo Go
-cannot play the sound. Suggested screens:
+The screenshots are in `store/screenshots/`. They show these screens:
 
 1. The psalm list
 2. Psalm 23 while it plays, with a lit syllable
