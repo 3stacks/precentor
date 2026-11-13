@@ -1,0 +1,74 @@
+# The release test of the Android app. Each screenshot is a candidate for the store page.
+# Maestro cannot hear the audio. The test checks the controls and the lit syllable.
+appId: com.lukeboyle.precentor
+name: Psalm 23, the player, the music and About
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: The Psalms of David in Metre
+    timeout: 60000
+- assertVisible:
+    id: psalm-search
+- takeScreenshot: store-01-psalm-list
+
+# Open Psalm 23.
+- tapOn:
+    id: psalm-search
+- inputText: shepherd
+- hideKeyboard
+- tapOn:
+    id: psalm-023
+- extendedWaitUntil:
+    visible:
+      id: player-toggle
+    timeout: 30000
+- assertVisible: Psalm 23
+- assertVisible: Crimond.*
+- takeScreenshot: store-02-psalm-23
+
+# Play. The control changes to Pause.
+- tapOn:
+    id: player-toggle
+- extendedWaitUntil:
+    visible:
+      id: player-toggle
+      text: Pause
+    timeout: 15000
+# The tune plays once through first. Skip to verse 1, then a syllable lights.
+- extendedWaitUntil:
+    visible:
+      id: skip-intro
+    timeout: 15000
+- tapOn:
+    id: skip-intro
+- extendedWaitUntil:
+    visible:
+      id: syllable-now
+    timeout: 15000
+- takeScreenshot: store-03-playing
+- tapOn:
+    id: player-toggle
+- assertVisible:
+    id: player-toggle
+    text: Play
+
+# The music view.
+- tapOn:
+    id: view-music
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: store-04-music
+- tapOn:
+    id: view-words
+
+# About.
+- back
+- extendedWaitUntil:
+    visible: The Psalms of David in Metre
+    timeout: 15000
+- tapOn: About
+- extendedWaitUntil:
+    visible: About Precentor
+    timeout: 15000
+- takeScreenshot: store-05-about

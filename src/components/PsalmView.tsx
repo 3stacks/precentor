@@ -365,7 +365,7 @@ function Player({ performance, psalm, setting, tune, transpose, entry, tuneSlug,
           <View style={styles.viewBar}>
             <View style={[styles.segmented, { backgroundColor: c.surface2, borderColor: c.line }]} role="group" aria-label="View">
               {(['words', 'music'] as const).map((m) => (
-                <Pressable key={m} role="button" aria-pressed={mode === m} onPress={() => chooseMode(m)} style={[styles.segment, mode === m && { backgroundColor: c.surface }]}>
+                <Pressable key={m} testID={`view-${m}`} role="button" aria-pressed={mode === m} onPress={() => chooseMode(m)} style={[styles.segment, mode === m && { backgroundColor: c.surface }]}>
                   <Text style={{ fontFamily: fonts.semibold, fontSize: 15, color: mode === m ? c.text : c.muted }}>{m === 'words' ? 'Words' : 'Music'}</Text>
                 </Pressable>
               ))}
@@ -426,7 +426,7 @@ function Player({ performance, psalm, setting, tune, transpose, entry, tuneSlug,
           <View style={styles.playerRow}>
             <Text style={[styles.where, { color: c.text }]}>{where}</Text>
             {inIntro && s.currentTick > 0 && (
-              <Pressable onPress={() => s.seek(performance.introTicks)} role="button">
+              <Pressable onPress={() => s.seek(performance.introTicks)} testID="skip-intro" role="button">
                 <Text style={{ color: c.accent, fontFamily: fonts.semibold, fontSize: 14 }}>Skip to verse 1</Text>
               </Pressable>
             )}
@@ -446,7 +446,7 @@ function Player({ performance, psalm, setting, tune, transpose, entry, tuneSlug,
           />
           <View style={styles.controls}>
             <IconButton label="Start again" d="M4 4v6h6M4.5 15a8 8 0 1 0 1.9-8.3L4 10" onPress={s.restart} />
-            <IconButton label={playing ? 'Pause' : 'Play'} d={playing ? 'M8 5v14M16 5v14' : 'M7 4.5v15l12-7.5Z'} fill={!playing} big onPress={() => void s.toggle()} />
+            <IconButton testID="player-toggle" label={playing ? 'Pause' : 'Play'} d={playing ? 'M8 5v14M16 5v14' : 'M7 4.5v15l12-7.5Z'} fill={!playing} big onPress={() => void s.toggle()} />
             <IconButton label="Repeat this verse" d="M17 2l4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4M21 13v2a3 3 0 0 1-3 3H3" on={s.loopStanza} onPress={() => s.setLoopStanza(!s.loopStanza)} />
             <View style={styles.steppers}>
               <Stepper label="Speed" value={`${s.bpm}`} onDown={() => setBpm(s.bpm - 4)} onUp={() => setBpm(s.bpm + 4)} />
@@ -580,12 +580,13 @@ function Stepper({ label, value, onDown, onUp }: { label: string; value: string;
   )
 }
 
-function IconButton({ label, d, fill, big, on, onPress }: { label: string; d: string; fill?: boolean; big?: boolean; on?: boolean; onPress: () => void }) {
+function IconButton({ label, d, fill, big, on, onPress, testID }: { label: string; d: string; fill?: boolean; big?: boolean; on?: boolean; onPress: () => void; testID?: string }) {
   const c = useColors()
   const color = big ? c.accentInk : on ? c.accent : c.text
   return (
     <Pressable
       onPress={onPress}
+      testID={testID}
       role="button"
       aria-label={label}
       aria-pressed={on}

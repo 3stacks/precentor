@@ -1,0 +1,156 @@
+name: Release tests
+
+# When the owner publishes a release, this workflow runs all of the tests.
+# It makes no store build and it submits nothing.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # The tag of the release must be the version in app.json. The tag can start with "v". The check removes it.
+      - name: Compare the release tag with app.json
+        if: github.event_name == 'release'
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version=$(node -p "require('./app.json').expo.version")
+          if [ "${TAG#v}" != "$version" ]; then
+            echo "::error::The tag $TAG is not the version $version in app.json."
+            exit 1
+          fi
+          echo "The tag $TAG agrees with app.json."
+
+      - run: npm ci
+      - run: npm test
+      - run: npx tsc --noEmit
+      - run: npx expo lint
+      - run: npx expo-doctor
+
+  web-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium webkit
+
+      # The Playwright config starts e2e/web/serve.mjs. That server sends index.html for each path of the app.
+      - run: npm run test:e2e:web
+
+      - name: Upload the Playwright report and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-e2e-report
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore
+
+  android-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      APK: android/app/build/outputs/apk/release/app-release.apk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # This action caches the Gradle files.
+      - uses: gradle/actions/setup-gradle@v4
+
+      # npm ci runs scripts/link-corpus.mjs. That script links the psalm data into the bundle.
+      - run: npm ci
+
+      # Prebuild signs the release variant with the debug keystore. That is correct for a test.
+      - run: npx expo prebuild -p android --no-install
+
+      # The emulator is x86_64, so build only that architecture.
+      - name: Build the release APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=x86_64
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install Maestro
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      # These options keep the audio of the emulator on, for the audio engine.
+      - name: Run the Maestro flows on an emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -no-boot-anim -camera-back none
+          disable-animations: true
+          script: |
+            adb install -r "$APK"
+            maestro test e2e/maestro/ --test-output-dir=maestro-output --debug-output=maestro-debug --format=junit --output=maestro-output/report.xml
+
+      - name: Collect the screenshots
+        if: always()
+        run: |
+          mkdir -p store-screenshots
+          find . \( -path ./node_modules -o -path ./store-screenshots \) -prune -o -name 'store-*.png' -print -exec cp {} store-screenshots/ \;
+
+      - name: Upload the store screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-store-screenshots
+          path: store-screenshots
+          if-no-files-found: warn
+
+      - name: Upload the Maestro output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-maestro-debug
+          path: |
+            maestro-output
+            maestro-debug
+          if-no-files-found: ignore

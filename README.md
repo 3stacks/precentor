@@ -73,6 +73,43 @@ npx expo export --platform ios --platform android   # the native bundles must co
 npm run build                                       # the web app
 ```
 
+## Release tests
+
+When you publish a GitHub release, the `Release tests` workflow runs all of the tests. You can also
+start it by hand from the Actions tab. The workflow makes no store build and submits nothing.
+
+| Job | Tests |
+|-----|-------|
+| `checks` | The unit tests, `tsc`, `expo lint` and `expo-doctor` |
+| `web-e2e` | Playwright tests of the web build in Chromium and WebKit |
+| `android-e2e` | Maestro flows on an Android emulator, with a release APK |
+
+The tag of the release must agree with `expo.version` in `app.json`. For example, the tag `v1.0.0`
+agrees with the version `1.0.0`.
+
+### Run the web tests
+
+1. Run `npm run build`.
+2. Run `npx playwright install chromium webkit` one time.
+3. Run `npm run test:e2e:web`.
+
+The tests start `e2e/web/serve.mjs` on port 18180. To use a different port, set `E2E_PORT`. The
+server sends `index.html` for each path of the app, as Cloudflare Pages does. The tests are in
+`e2e/web/`. The report goes to `playwright-report/`.
+
+### Run the Android tests
+
+Expo Go plays no sound, so the tests use a release build. Start an Android emulator first.
+
+1. Install the [Maestro CLI](https://docs.maestro.dev).
+2. Run `npx expo prebuild -p android --no-install`.
+3. In `android/`, run `./gradlew assembleRelease`.
+4. Run `adb install -r android/app/build/outputs/apk/release/app-release.apk`.
+5. Run `maestro test e2e/maestro/`.
+
+The flows take a screenshot at each step. The names start with `store-`, because each screenshot is
+a candidate for the store page. In CI, the artifact `android-store-screenshots` holds them.
+
 ## Paths and links
 
 | Path | Screen |

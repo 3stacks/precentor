@@ -42,6 +42,7 @@ export function Library() {
           autoCorrect={false}
           inputMode="search"
           aria-label="Find a psalm"
+          testID="psalm-search"
         />
       </View>
 
@@ -51,7 +52,7 @@ export function Library() {
         <View style={[styles.list, { backgroundColor: c.surface, borderColor: c.line }]} >
           {shown.map((p, i) => (
             <Link key={p.key} href={psalmHref(p.key) as Href} asChild>
-              <Pressable style={StyleSheet.flatten([styles.row, i > 0 && { borderTopWidth: 1, borderTopColor: c.line }])}>
+              <Pressable testID={`psalm-${p.key}`} style={StyleSheet.flatten([styles.row, i > 0 && { borderTopWidth: 1, borderTopColor: c.line }])}>
                 <Text style={[styles.num, { color: c.accent }]}>{p.number}</Text>
                 <View style={styles.body}>
                   <Text style={[styles.opening, { color: c.text }]}>{p.opening}</Text>

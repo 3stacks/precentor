@@ -25,3 +25,10 @@ assets/corpus/
 .metro-health-check*
 *.tsbuildinfo
 google-service-account.json
+
+# Release test output
+playwright-report/
+test-results/
+maestro-output/
+maestro-debug/
+store-screenshots/
