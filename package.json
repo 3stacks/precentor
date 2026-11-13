@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "corpus": "node scripts/import-corpus.mjs && node scripts/link-corpus.mjs",
-    "postinstall": "node scripts/link-corpus.mjs",
+    "postinstall": "node scripts/link-corpus.mjs && node scripts/patch-dom-webview.mjs",
     "eas-build-post-install": "node scripts/link-corpus.mjs"
   },
   "dependencies": {
