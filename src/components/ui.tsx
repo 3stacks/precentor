@@ -1,5 +1,5 @@
 import { Link, type Href } from 'expo-router'
-import * as WebBrowser from 'expo-web-browser'
+import { openLink } from '../lib/openLink.ts'
 import type { ReactNode, RefObject } from 'react'
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance, type StyleProp, type TextProps, type TextStyle, type ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -47,7 +47,7 @@ export function A({ href, children, style }: { href: string; children: ReactNode
   )
 }
 
-/** A link to another site. The native app opens it in the in-app browser. */
+/** A link to another site. The native app opens a sibling app when it is installed, and other sites in the in-app browser. */
 export function ExternalLink({ href, children, style, event }: { href: string; children: ReactNode; style?: StyleProp<TextStyle>; event?: string }) {
   const c = useColors()
   return (
@@ -58,7 +58,7 @@ export function ExternalLink({ href, children, style, event }: { href: string; c
         if (event) track(event)
         if (Platform.OS !== 'web') {
           e.preventDefault()
-          void WebBrowser.openBrowserAsync(href)
+          void openLink(href)
         }
       }}>
       {children}
