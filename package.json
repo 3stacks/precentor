@@ -11,7 +11,7 @@
     "ios": "expo run:ios",
     "android": "expo run:android",
     "web": "expo start --web",
-    "build": "tsc --noEmit && expo export --platform web && node scripts/web-postbuild.mjs",
+    "build": "tsc --noEmit && expo export --platform web && node scripts/seo.mjs && node scripts/web-postbuild.mjs",
     "preview": "npx serve dist --single --listen 5180",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
