@@ -78,17 +78,9 @@ the Google Play developer account. `store/listing.md` has the text of each store
 
 ## Screenshots
 
-Apple needs 3 to 10 screenshots for the 6.9-inch iPhone, at 1320 × 2868 pixels. Google Play needs 2
-to 8 phone screenshots.
-
-```bash
-npx expo run:ios
-```
-
-Open the app in the iPhone 16 Pro Max simulator. Press Command-S to save a screenshot of the screen
-at the full size. `store/listing.md` gives the screens to show. Use the same files for Google Play.
-
-Expo Go cannot play the sound. For the screenshots, use `npx expo run:ios`, which makes a development build in the simulator.
+The screenshots are in `store/screenshots/`. Upload `ios/` to App Store Connect and `play/` to
+Google Play, in the order of the file names. `store/screenshots/README.md` tells how to make them
+again.
 
 ## Each later release
 
