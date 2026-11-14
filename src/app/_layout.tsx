@@ -17,6 +17,9 @@ import { fonts, useColors } from '../lib/theme.ts'
 // Show the splash screen until the fonts and the saved settings load.
 SplashScreen.preventAutoHideAsync().catch(() => {})
 
+type WebGlobal = { document?: { getElementById(id: string): { remove(): void } | null } }
+const browser = globalThis as unknown as WebGlobal
+
 export default function Layout() {
   const c = useColors()
   const [loaded, failed] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold })
@@ -27,7 +30,10 @@ export default function Layout() {
   }, [])
   const ready = (loaded || failed) && stored
   useEffect(() => {
-    if (ready) SplashScreen.hideAsync().catch(() => {})
+    if (!ready) return
+    SplashScreen.hideAsync().catch(() => {})
+    // On the web, remove the splash of public/index.html after the first screen draws.
+    requestAnimationFrame(() => browser.document?.getElementById('boot')?.remove())
   }, [ready])
   if (!ready) return null
 

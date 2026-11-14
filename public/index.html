@@ -15,6 +15,10 @@
     <script>
       window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)};(function(){var loaded=false;function load(){if(loaded)return;loaded=true;var s=document.createElement("script");s.src="/a/boot.js";s.async=true;document.head.appendChild(s)}["pointerdown","keydown","scroll","touchstart"].forEach(function(e){window.addEventListener(e,load,{once:true,passive:true})});document.addEventListener("click",function(e){var el=e.target&&e.target.closest&&e.target.closest("[data-event]");if(!el)return;var props={path:location.pathname};if(el.dataset.eventLabel)props.label=el.dataset.eventLabel;window.plausible(el.dataset.event,{props:props})},true)})();
     </script>
+    <!-- With JavaScript, a splash hides the crawler text until the app draws (src/app/_layout.tsx removes it). -->
+    <script>
+      document.documentElement.classList.add('js')
+    </script>
     <!-- The react-native-web style reset. The screens scroll in a <ScrollView>, not the body. -->
     <style id="expo-reset">
       html,
@@ -28,6 +32,10 @@
         body {
           background: #0f172a;
         }
+        #boot {
+          background: #0f172a;
+          color: #e7a8a2;
+        }
       }
       body {
         overflow: hidden;
@@ -37,10 +45,28 @@
         height: 100%;
         flex: 1;
       }
+      .js #seo {
+        display: none;
+      }
+      #boot {
+        display: none;
+        background: #f8fafc;
+        color: #883231;
+      }
+      .js #boot {
+        display: flex;
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        align-items: center;
+        justify-content: center;
+        font: 800 28px 'Cabinet Grotesk', system-ui, sans-serif;
+      }
     </style>
   </head>
   <body>
     <noscript>Precentor needs JavaScript.</noscript>
+    <div id="boot" aria-hidden="true">Precentor</div>
     <div id="root"></div>
   </body>
 </html>
