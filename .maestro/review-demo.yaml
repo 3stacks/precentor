@@ -1,0 +1,268 @@
+# Precentor: the demo flow for App Review (Guideline 2.1, screen recording).
+#
+# Run on the iOS Simulator first:
+#   maestro test .maestro/review-demo.yaml
+# Then on a physical iPhone, with the community maestro-ios-device patch, while QuickTime
+# records the iPhone screen (File > New Movie Recording > select the iPhone as the camera).
+# Start the QuickTime recording BEFORE you start the flow, so the video begins with the launch.
+# Turn the iPhone volume up. The silent switch does not matter: the app uses the playback audio session.
+#
+# The flow does not use clearState. It leaves the saved settings (tune, speed, key, view)
+# as it found them: each change is undone before the flow moves on.
+#
+# A "pause" below is an extendedWaitUntil for an element that never exists, with optional: true.
+# It holds the screen for the timeout so a reviewer can follow, and logs a warning, not a failure.
+appId: com.lukeboyle.precentor
+name: Precentor App Review demo
+---
+# 1. Launch from a cold start.
+- stopApp
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible: "The Psalms of David in Metre"
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 3000
+- extendedWaitUntil: # pause 3 s on the home screen
+    visible:
+      id: "maestro-pause"
+    timeout: 3000
+    optional: true
+
+# 2. Browse the psalm list.
+- swipe:
+    start: 50%, 75%
+    end: 50%, 30%
+    duration: 800
+- waitForAnimationToEnd:
+    timeout: 3000
+- swipe:
+    start: 50%, 75%
+    end: 50%, 30%
+    duration: 800
+- waitForAnimationToEnd:
+    timeout: 3000
+- extendedWaitUntil: # pause 2 s
+    visible:
+      id: "maestro-pause"
+    timeout: 2000
+    optional: true
+- scrollUntilVisible:
+    element: "Find a psalm"
+    direction: UP
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 3. Search the psalms by words.
+- tapOn: "Find a psalm" # the accessibilityLabel (aria-label) of the search box
+- inputText: "shepherd"
+- extendedWaitUntil:
+    visible: ".*LORD.s my shepherd.*" # Psalm 23, by its first line
+    timeout: 5000
+# Tap the heading to close the keyboard (more reliable than hideKeyboard on iOS).
+- tapOn: "The Psalms of David in Metre"
+- waitForAnimationToEnd:
+    timeout: 3000
+- extendedWaitUntil: # pause 2 s on the results (Psalm 23 and Psalm 80)
+    visible:
+      id: "maestro-pause"
+    timeout: 2000
+    optional: true
+
+# 4. Open Psalm 23.
+- tapOn: ".*LORD.s my shepherd.*"
+- extendedWaitUntil:
+    visible: "Play"
+    timeout: 15000
+- assertVisible: "Psalm 23"
+- waitForAnimationToEnd:
+    timeout: 3000
+# Start in the Words view (the app remembers the last view). "Melody shape" shows only in Words.
+- runFlow:
+    when:
+      notVisible: "Melody shape"
+    commands:
+      - tapOn: "Words"
+- extendedWaitUntil: # pause 2 s on the psalm
+    visible:
+      id: "maestro-pause"
+    timeout: 2000
+    optional: true
+
+# 5. Play the tune. The player plays the tune once through, then the verses.
+- tapOn: "Play"
+- extendedWaitUntil:
+    visible: "Pause"
+    timeout: 5000
+- extendedWaitUntil: # hear the tune once through for 4 s
+    visible:
+      id: "maestro-pause"
+    timeout: 4000
+    optional: true
+- runFlow:
+    when:
+      visible: "Skip to verse 1"
+    commands:
+      - tapOn: "Skip to verse 1"
+- extendedWaitUntil:
+    visible: "Verse 1 of \\d+"
+    timeout: 8000
+- extendedWaitUntil: # let verse 1 play for 9 s, with the syllables lit in turn
+    visible:
+      id: "maestro-pause"
+    timeout: 9000
+    optional: true
+- tapOn: "Pause"
+- extendedWaitUntil:
+    visible: "Play"
+    timeout: 5000
+
+# 6. Speed and key. Each change is undone, so the saved settings stay the same.
+- tapOn: "Speed up"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn: "Speed down"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn: "Key up"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn: "Key down"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 7. Choose another tune: Dundee (French).
+- tapOn: "Tune: .*Choose a tune"
+- extendedWaitUntil:
+    visible: "Choose a tune"
+    timeout: 5000
+- waitForAnimationToEnd:
+    timeout: 3000
+- scrollUntilVisible:
+    element: "Dundee \\(French\\)"
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Dundee \\(French\\)"
+- extendedWaitUntil:
+    visible: "Tune: Dundee.*Choose a tune"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Play"
+- extendedWaitUntil: # hear Dundee for 6 s
+    visible:
+      id: "maestro-pause"
+    timeout: 6000
+    optional: true
+- tapOn: "Pause"
+
+# 8. The music view: the score of the tune, with the note that sounds lit.
+- tapOn: "Music"
+- waitForAnimationToEnd:
+    timeout: 5000
+- extendedWaitUntil: # let the score draw
+    visible:
+      id: "maestro-pause"
+    timeout: 3000
+    optional: true
+- tapOn: "Play"
+- extendedWaitUntil: # hear the tune and see the lit note for 6 s
+    visible:
+      id: "maestro-pause"
+    timeout: 6000
+    optional: true
+- tapOn: "Pause"
+- tapOn: "Start again"
+# Go back to the Words view and the recommended tune, as the app was before the demo.
+- tapOn: "Words"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Tune: .*Choose a tune"
+- extendedWaitUntil:
+    visible: "Choose a tune"
+    timeout: 5000
+- tapOn: "Crimond . recommended"
+- extendedWaitUntil:
+    visible: "Tune: Crimond.*Choose a tune"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 9. Back to the psalm list.
+- runFlow:
+    file: subflows/back.yaml
+    env:
+      DEST: "The Psalms of David in Metre"
+- tapOn: "Find a psalm" # the accessibilityLabel (aria-label) of the search box
+- eraseText: 20
+- tapOn: "The Psalms of David in Metre"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 10. About: the purpose of the app and the sources of the words and the tunes.
+# The header link. The footer also has "About", at the end of the list, below the heading.
+- tapOn:
+    text: "About"
+    above: "The Psalms of David in Metre"
+- extendedWaitUntil:
+    visible: "About Precentor"
+    timeout: 10000
+- extendedWaitUntil: # pause 3 s
+    visible:
+      id: "maestro-pause"
+    timeout: 3000
+    optional: true
+- scrollUntilVisible:
+    element: "The words and the tunes"
+    direction: DOWN
+    timeout: 20000
+    centerElement: true
+- extendedWaitUntil: # pause 4 s on the sources and licences
+    visible:
+      id: "maestro-pause"
+    timeout: 4000
+    optional: true
+
+# 11. Privacy.
+- scrollUntilVisible:
+    element: "Privacy"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Privacy"
+- extendedWaitUntil:
+    visible: "Precentor collects no personal data.*"
+    timeout: 10000
+- extendedWaitUntil: # pause 3 s
+    visible:
+      id: "maestro-pause"
+    timeout: 3000
+    optional: true
+- scrollUntilVisible:
+    element: "The iPhone and Android apps"
+    direction: DOWN
+    timeout: 10000
+    centerElement: true
+- extendedWaitUntil: # pause 4 s
+    visible:
+      id: "maestro-pause"
+    timeout: 4000
+    optional: true
+
+# 12. End on the home screen.
+# The About page is still scrolled to the end, so wait for a heading near the end.
+- runFlow:
+    file: subflows/back.yaml
+    env:
+      DEST: "Related sites"
+- runFlow:
+    file: subflows/back.yaml
+    env:
+      DEST: "The Psalms of David in Metre"
+- assertVisible: ".*That man hath perfect blessedness.*" # Psalm 1
+- extendedWaitUntil: # hold the home screen for 3 s before the recording stops
+    visible:
+      id: "maestro-pause"
+    timeout: 3000
+    optional: true

@@ -1,0 +1,37 @@
+# Go back one screen on iOS. Maestro's `back` command is Android-only.
+# The header back button has no visible text (headerBackButtonDisplayMode: 'minimal'),
+# so try its usual iOS identifier, then its usual label, then the edge-swipe gesture.
+# Each try runs only while the destination (env DEST, a visible text) is still not on screen.
+appId: com.lukeboyle.precentor
+---
+- runFlow:
+    when:
+      visible:
+        id: "BackButton"
+    commands:
+      - tapOn:
+          id: "BackButton"
+      - waitForAnimationToEnd:
+          timeout: 3000
+- runFlow:
+    when:
+      notVisible: ${DEST}
+    commands:
+      - tapOn:
+          text: "Back"
+          optional: true
+      - waitForAnimationToEnd:
+          timeout: 3000
+- runFlow:
+    when:
+      notVisible: ${DEST}
+    commands:
+      - swipe:
+          start: 1%, 50%
+          end: 85%, 50%
+          duration: 400
+      - waitForAnimationToEnd:
+          timeout: 3000
+- extendedWaitUntil:
+    visible: ${DEST}
+    timeout: 5000
