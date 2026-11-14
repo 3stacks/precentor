@@ -4,7 +4,7 @@ import { loadIndex } from '../data/corpus.ts'
 import { psalmHref } from '../lib/routes.ts'
 import { fonts, useColors } from '../lib/theme.ts'
 import { useAsync } from '../lib/useAsync.ts'
-import { A, Card, ExternalLink, H1, H2, KOFI, Page, T } from './ui.tsx'
+import { A, APP_STORE, Card, ExternalLink, H1, H2, KOFI, Page, T } from './ui.tsx'
 
 export function About({ section }: { section?: string }) {
   const c = useColors()
@@ -22,6 +22,19 @@ export function About({ section }: { section?: string }) {
         </P>
         <P>Before verse 1, the player plays the tune once through. Tap a line to go to that line. The app works offline after you open it once.</P>
       </Card>
+
+      {/* Only the website offers the iPhone app. */}
+      {Platform.OS === 'web' && (
+        <Card>
+          <H2>The iPhone app</H2>
+          <P>Precentor is also an app for iPhone. The app is free, and it has the same psalms and tunes as this website.</P>
+          <T>
+            <ExternalLink href={APP_STORE} event="App Store" style={{ fontFamily: fonts.semibold }}>
+              Get Precentor from the App Store
+            </ExternalLink>
+          </T>
+        </Card>
+      )}
 
       <View
         onLayout={(e) => {

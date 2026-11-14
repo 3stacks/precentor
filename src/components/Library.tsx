@@ -1,11 +1,11 @@
 import { Link, type Href } from 'expo-router'
 import { useMemo, useState } from 'react'
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { loadIndex, type CorpusIndex, type PsalmEntry } from '../data/corpus.ts'
 import { psalmHref } from '../lib/routes.ts'
 import { fonts, useColors } from '../lib/theme.ts'
 import { useAsync } from '../lib/useAsync.ts'
-import { Empty, H1, Page } from './ui.tsx'
+import { APP_STORE, Empty, ExternalLink, H1, Page } from './ui.tsx'
 
 export function Library() {
   const c = useColors()
@@ -43,6 +43,16 @@ export function Library() {
           inputMode="search"
           aria-label="Find a psalm"
         />
+        {/* Only the website offers the iPhone app. */}
+        {Platform.OS === 'web' && (
+          <Text style={styles.store}>
+            Precentor is also an app for iPhone.{' '}
+            <ExternalLink href={APP_STORE} event="App Store" style={styles.storeLink}>
+              Get it free from the App Store
+            </ExternalLink>
+            .
+          </Text>
+        )}
       </View>
 
       {shown.length === 0 ? (
@@ -88,6 +98,8 @@ const styles = StyleSheet.create({
   hero: { borderRadius: 16, borderBottomRightRadius: 48, paddingHorizontal: 20, paddingVertical: 22, gap: 8 },
   heroText: { color: '#fff', fontFamily: fonts.regular, fontSize: 16, lineHeight: 24, marginBottom: 6 },
   search: { backgroundColor: '#fff', color: '#0f172a', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10, fontSize: 16, fontFamily: fonts.regular },
+  store: { color: '#fff', fontFamily: fonts.regular, fontSize: 14, lineHeight: 20 },
+  storeLink: { color: '#fff', fontFamily: fonts.semibold, textDecorationLine: 'underline' },
   list: { borderWidth: 1, borderRadius: 16, overflow: 'hidden' },
   row: { flexDirection: 'row', gap: 14, alignItems: 'baseline', paddingHorizontal: 16, paddingVertical: 12 },
   num: { fontFamily: fonts.display, fontWeight: '800', fontSize: 20, minWidth: 44, fontVariant: ['tabular-nums'] },

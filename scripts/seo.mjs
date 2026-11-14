@@ -23,6 +23,7 @@ const BOOK = 'The Psalms of David in Metre'
 const SOURCE = 'https://github.com/kadencartwright/open-1650'
 const HADDINGTON = 'https://haddingtonbible.org'
 const HEARERS = 'https://hearers.app/app/'
+const APP_STORE = 'https://apps.apple.com/app/id6834265380'
 const PDM = 'https://creativecommons.org/publicdomain/mark/1.0/'
 const DESCRIPTION = 'Sing the 1650 Scottish Psalter. Every psalm, a choice of tunes, and a player that shows each syllable as you sing.'
 const STYLE = 'overflow:auto;height:100%;width:100%;box-sizing:border-box;padding:16px;max-width:760px;margin:0 auto;font:17px/1.6 system-ui,sans-serif'
@@ -141,6 +142,7 @@ export function homePage(index) {
     `<h1>${NAME}: sing the 1650 Scottish Psalter</h1>`,
     `<p>${esc(DESCRIPTION)}</p>`,
     `<p>${NAME} has each psalm of ${esc(BOOK)}, with ${index.tunes.length} tunes in harmony. Choose a psalm, choose a tune, and sing along. The player plays the tune and shows each syllable as you sing. The music view shows the score, verse by verse. ${NAME} is free, with no account and no advertisements. It works on the web, and there is an app for iPhone and Android.</p>`,
+    `<p>${link(APP_STORE, `Get ${NAME} for iPhone from the App Store`)}</p>`,
     `<p>${link('/about', `About ${NAME}`)} · ${link('/privacy', 'Privacy')}</p>`,
     `<h2>The psalms</h2>`,
     `<ul>\n${list}\n</ul>`,

@@ -1,4 +1,5 @@
 import { Link, type Href } from 'expo-router'
+import { APPS } from '../lib/appLink.ts'
 import { openLink } from '../lib/openLink.ts'
 import type { ReactNode, RefObject } from 'react'
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance, type StyleProp, type TextProps, type TextStyle, type ViewStyle } from 'react-native'
@@ -7,6 +8,9 @@ import { track } from '../lib/track.ts'
 import { fonts, MAX_WIDTH, useColors } from '../lib/theme.ts'
 
 export const KOFI = 'https://ko-fi.com/lukeboyle'
+
+/** The App Store page of Precentor. Only the website links to it. */
+export const APP_STORE = APPS.precentor.appStore as string
 
 /** Body text in the app colours. */
 export function T({ style, muted, small, ...props }: TextProps & { muted?: boolean; small?: boolean }) {

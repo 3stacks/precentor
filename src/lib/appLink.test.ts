@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { appLink } from './appLink.ts'
+import { APPS, appLink, siblingOf } from './appLink.ts'
 
 describe('appLink', () => {
   it('opens a passage or a unit in Hearers', () => {
@@ -36,5 +36,38 @@ describe('appLink', () => {
     expect(appLink('https://ko-fi.com/lukeboyle', 'x')).toBeUndefined()
     expect(appLink('https://precentor.app/psalm/023', 'precentor')).toBeUndefined()
     expect(appLink('http://hearers.app', 'x')).toBeUndefined()
+  })
+})
+
+describe('siblingOf', () => {
+  it('gives the scheme of the sibling app that a link opens', () => {
+    expect(siblingOf('https://hearers.app/app/#/add/Ps.23', 'precentor')).toBe('hearers')
+    expect(siblingOf('https://haddingtonbible.org/psalms-23#v23-1', 'precentor')).toBe('haddingtonbible')
+    expect(siblingOf('https://covenanthousehold.app', 'precentor')).toBe('covenanthousehold')
+    expect(siblingOf('https://methodforprayer.app/pray', 'precentor')).toBe('methodforprayer')
+    expect(siblingOf('https://precentor.app/psalm/023?tune=dundee', 'hearers')).toBe('precentor')
+  })
+
+  it('gives undefined when appLink keeps the link on the web', () => {
+    expect(siblingOf('https://hearers.app/privacy/', 'precentor')).toBeUndefined()
+    expect(siblingOf('https://precentor.app/psalm/023', 'precentor')).toBeUndefined()
+    expect(siblingOf('https://ko-fi.com/lukeboyle', 'precentor')).toBeUndefined()
+  })
+})
+
+describe('APPS', () => {
+  it('has a name for each scheme that appLink opens', () => {
+    for (const url of ['https://hearers.app', 'https://precentor.app', 'https://haddingtonbible.org', 'https://covenanthousehold.app', 'https://methodforprayer.app']) {
+      const scheme = siblingOf(url, 'x')
+      expect(scheme && APPS[scheme]?.name).toBeTruthy()
+    }
+  })
+
+  it('links only the apps that are on the App Store', () => {
+    expect(APPS.precentor.appStore).toBe('https://apps.apple.com/app/id6834265380')
+    expect(APPS.hearers.appStore).toBe('https://apps.apple.com/app/id6834307677')
+    expect(APPS.covenanthousehold.appStore).toBe('https://apps.apple.com/app/id6834362234')
+    expect(APPS.haddingtonbible.appStore).toBeUndefined()
+    expect(APPS.methodforprayer.appStore).toBeUndefined()
   })
 })
