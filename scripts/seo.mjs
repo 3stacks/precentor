@@ -141,7 +141,7 @@ export function homePage(index) {
   const body = [
     `<h1>${NAME}: sing the 1650 Scottish Psalter</h1>`,
     `<p>${esc(DESCRIPTION)}</p>`,
-    `<p>${NAME} has each psalm of ${esc(BOOK)}, with ${index.tunes.length} tunes in harmony. Choose a psalm, choose a tune, and sing along. The player plays the tune and shows each syllable as you sing. The music view shows the score, verse by verse. ${NAME} is free, with no account and no advertisements. It works on the web, and there is an app for iPhone and Android.</p>`,
+    `<p>${NAME} has each psalm of ${esc(BOOK)}, with ${index.tunes.length} tunes in harmony. Choose a psalm, choose a tune, and sing along. The player plays the tune and shows each syllable as you sing. The music view shows the score, verse by verse. ${NAME} is free, with no account and no advertisements. It works on the web, and there is an app for iPhone. An app for Android comes later.</p>`,
     `<p>${link(APP_STORE, `Get ${NAME} for iPhone from the App Store`)}</p>`,
     `<p>${link('/about', `About ${NAME}`)} · ${link('/privacy', 'Privacy')}</p>`,
     `<h2>The psalms</h2>`,
@@ -157,7 +157,7 @@ export function homePage(index) {
         url: `${SITE}/`,
         description: DESCRIPTION,
         applicationCategory: 'MultimediaApplication',
-        operatingSystem: 'Web, iOS, Android',
+        operatingSystem: 'Web, iOS',
         isAccessibleForFree: true,
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'AUD' },
       },
@@ -185,7 +185,7 @@ export function llms(index) {
   const psalms = index.psalms.map((p) => `- [${plainTitle(p.title)}: ${p.opening}](${SITE}/psalm/${p.key}): ${metreName(p.meterName)} (${p.meter}).`).join('\n')
   return `# ${NAME}
 
-> ${NAME} is a free app to sing the Scottish Psalter of 1650, ${BOOK}. It has each psalm, a choice of tunes in harmony, a player that shows each syllable as you sing, and the music of each tune. It works on the web, on iPhone and on Android.
+> ${NAME} is a free app to sing the Scottish Psalter of 1650, ${BOOK}. It has each psalm, a choice of tunes in harmony, a player that shows each syllable as you sing, and the music of each tune. It works on the web and on iPhone. An app for Android comes later.
 
 - The words come from Open 1650 (${SOURCE}). The text is in the public domain, and the transcription is CC0.
 - A psalm page shows the words of the psalm, its metre and the tunes of that metre.
