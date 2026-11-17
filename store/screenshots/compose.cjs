@@ -1,12 +1,13 @@
 // Store screenshots in the Blinders style: one wide scene, cut into store slots.
-// node compose.cjs <config.json> <outDir>
+// node compose.cjs <config.json> <outDir> [target ...]
+// With no target, it makes every target. The targets are ios, ios-6.3, play and ipad.
 // Config: { bg: [c1, c2], accent, ink, sub, motif: 'staff'|'none', panels: [{ title, body, shot }] }
 const sharp = require('sharp')
 const fs = require('fs')
 const path = require('path')
 const { Buffer } = require('node:buffer')
 
-const [cfgPath, OUT] = process.argv.slice(2)
+const [cfgPath, OUT, ...only] = process.argv.slice(2)
 const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'))
 const base = path.dirname(cfgPath)
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -16,7 +17,11 @@ const TARGETS = {
   ios: { W: 1320, H: 2868, phoneW: 0.8, phoneTop: 0.215, title: 104, body: 46, island: true },
   'ios-6.3': { W: 1206, H: 2622, phoneW: 0.8, phoneTop: 0.215, title: 95, body: 42, island: true },
   play: { W: 1080, H: 1920, phoneW: 0.64, phoneTop: 0.245, title: 80, body: 36, island: false },
+  // 13-inch iPad. The screens come from raw-ipad/, and the frame is a tablet with a thin, even bezel.
+  // The whole tablet fits in the slot, so the player at the bottom of the screen shows.
+  ipad: { W: 2064, H: 2752, phoneW: 0.72, phoneTop: 0.255, title: 128, body: 56, tablet: true, raw: 'raw-ipad' },
 }
+for (const name of only) if (!TARGETS[name]) throw new Error(`Unknown target: ${name}`)
 
 function background(t, n) {
   const { W, H } = t
@@ -72,6 +77,35 @@ function text(t, n) {
   return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${W * n}" height="${H}">${blocks}</svg>`)
 }
 
+/** The screen in a plain tablet frame: an even, thin bezel, round corners, no camera cut-out. */
+async function tablet(file, t) {
+  const w = Math.round(t.W * t.phoneW)
+  const bezel = Math.round(w * 0.022)
+  const sw = w - bezel * 2
+  const meta = await sharp(file).metadata()
+  const sh = Math.round((meta.height / meta.width) * sw)
+  const status = Math.round(sw * 0.03)
+  const [r, g, b] = await sharp(file).extract({ left: 2, top: 2, width: 1, height: 1 }).raw().toBuffer()
+  const shot = await sharp(file).resize({ width: sw }).toBuffer()
+  const screenH = status + sh
+  const h = screenH + bezel * 2
+  const rOuter = Math.round(w * 0.025)
+  const rInner = Math.max(4, rOuter - Math.round(bezel * 0.6))
+  const time = `<text x="${bezel + sw * 0.025}" y="${bezel + status * 0.72}" text-anchor="start" font-family="Inter" font-weight="600" font-size="${status * 0.55}" fill="${r + g + b > 380 ? '#000' : '#fff'}">9:41</text>`
+  const screen = await sharp({ create: { width: sw, height: screenH, channels: 4, background: { r, g, b, alpha: 1 } } })
+    .composite([{ input: shot, top: status, left: 0 }])
+    .png()
+    .toBuffer()
+  const mask = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${sw}" height="${screenH}"><rect width="${sw}" height="${screenH}" rx="${rInner}" fill="#fff"/></svg>`)
+  const rounded = await sharp(screen).composite([{ input: mask, blend: 'dest-in' }]).png().toBuffer()
+  const frame = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+    <rect width="${w}" height="${h}" rx="${rOuter}" fill="#111"/>
+    <rect x="1.5" y="1.5" width="${w - 3}" height="${h - 3}" rx="${rOuter - 1}" fill="none" stroke="#fff" stroke-opacity="0.25" stroke-width="3"/>
+  </svg>`)
+  const over = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">${time}</svg>`)
+  return sharp(frame).composite([{ input: rounded, top: bezel, left: bezel }, { input: over }]).png().toBuffer()
+}
+
 /** The screen in a plain phone frame, with a status bar strip in the colour of the app header. */
 async function phone(file, t) {
   const w = Math.round(t.W * t.phoneW)
@@ -122,10 +156,12 @@ async function shadow(img) {
 
 ;(async () => {
   for (const [name, t] of Object.entries(TARGETS)) {
+    if (only.length && !only.includes(name)) continue
     const n = cfg.panels.length
     const layers = [{ input: text(t, n), top: 0, left: 0 }]
     for (const [i, p] of cfg.panels.entries()) {
-      const { img, pad } = await shadow(await phone(path.resolve(base, p.shot), t))
+      const shot = path.resolve(base, t.raw ? p.shot.replace(/^raw\//, `${t.raw}/`) : p.shot)
+      const { img, pad } = await shadow(await (t.tablet ? tablet : phone)(shot, t))
       const m = await sharp(img).metadata()
       const top = Math.round(t.H * t.phoneTop) - pad
       // Let the phone run off the bottom edge, as many store listings do.

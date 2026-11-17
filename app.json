@@ -3,14 +3,14 @@
     "name": "Precentor",
     "slug": "precentor",
     "scheme": "precentor",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#f8fafc",
     "ios": {
       "bundleIdentifier": "com.lukeboyle.precentor",
-      "supportsTablet": false,
+      "supportsTablet": true,
       "config": {
         "usesNonExemptEncryption": false
       },

@@ -11,7 +11,8 @@ The section "Manual steps for the video" is for you. Do not paste it.
 1. Screen video
 
 The video is on a physical iPhone. It starts at the launch of the app. It shows the usual use of the
-app, from the start to the end.
+app, from the start to the end. The app also runs on the iPad. On the iPad, the screens and the steps
+are the same.
 
 Video: [video link]
 
