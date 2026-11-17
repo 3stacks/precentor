@@ -53,7 +53,7 @@ In Scottish churches the precentor led the singing of the psalms, one line at a 
 • The music for each tune
 • Links to the notes of the Self-Interpreting Bible on each psalm
 
-The psalms and the tunes are in the app, so it works with no connection. It plays when your iPhone is on silent.
+The psalms and the tunes are in the app, so it works with no connection. It plays when your iPhone or iPad is on silent.
 
 Precentor is free. It has no account, no advertisements and no tracking. Its code is open source.
 ```

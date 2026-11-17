@@ -11,7 +11,7 @@ async function openWeb(url: string) {
 
 /**
  * Open a link from the native app. A link to a sibling app opens that app when
- * it is on the device. On an iPhone without the sibling app, a dialog offers
+ * it is on the device. On an iPhone or an iPad without the sibling app, a dialog offers
  * the App Store page or the website. Any other link opens in the in-app browser.
  */
 export async function openLink(url: string) {
@@ -25,7 +25,7 @@ export async function openLink(url: string) {
       const sibling = APPS[siblingOf(url, 'precentor') ?? '']
       if (Platform.OS === 'ios' && sibling?.appStore) {
         const { name, appStore } = sibling
-        Alert.alert(`${name} is not on this iPhone`, `Get ${name} free from the App Store, or open the website.`, [
+        Alert.alert(`${name} is not on this ${Platform.isPad ? 'iPad' : 'iPhone'}`, `Get ${name} free from the App Store, or open the website.`, [
           { text: 'App Store', onPress: () => void Linking.openURL(appStore).catch(() => openWeb(appStore)) },
           { text: 'Website', onPress: () => void openWeb(url) },
           { text: 'Cancel', style: 'cancel' },
