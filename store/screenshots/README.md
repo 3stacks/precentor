@@ -28,3 +28,19 @@ The third argument of `compose.cjs` selects the sets to make: `ios`, `ios-6.3`, 
 With no third argument, it makes all of the sets again.
 
 `config.json` holds the colours, the headlines and the order of the screens.
+
+## The bold set
+
+`bold/` holds a second design, for a test against the first design. `compose-bold.cjs` draws it
+from the same raw screens.
+
+- The first card and the last card have a loud colour. One card in the middle is dark.
+- Each headline has two to four words. The key word is large and italic.
+- The phones tilt. Parts of each screen stand out of the phone at a larger size.
+
+`bold.json` holds the colours, the headlines and the crops. The script needs `sharp`, and
+`playwright` with its Chromium browser. The fonts are in `fonts/`.
+
+```bash
+NODE_PATH=<the node_modules with sharp and playwright> node compose-bold.cjs bold.json bold
+```
