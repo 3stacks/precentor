@@ -44,3 +44,13 @@ from the same raw screens.
 ```bash
 NODE_PATH=<the node_modules with sharp and playwright> node compose-bold.cjs bold.json bold
 ```
+
+### The iPad set
+
+`bold/ipad/` holds the bold set for the 13-inch iPad. Each image is 2064 × 2752 px.
+`compose-bold-ipad.cjs` draws the set from the raw iPad screens. `bold-ipad.json` holds the
+colours, the headlines and the crops.
+
+```bash
+NODE_PATH=<the node_modules with sharp and playwright> node compose-bold-ipad.cjs bold-ipad.json bold/ipad
+```

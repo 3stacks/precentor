@@ -1,0 +1,146 @@
+{
+  "raw": "raw-ipad",
+  "landscape": false,
+  "palette": {
+    "loud": "#ff5b3a",
+    "loudInk": "#2a0a08",
+    "mid": "#9a3a38",
+    "dark": "#2a0a08",
+    "pop": "#ffcf9e"
+  },
+  "cards": [
+    {
+      "shot": "list.png",
+      "tilt": 4,
+      "dx": -30,
+      "lines": [
+        {
+          "t": "Sing the",
+          "size": 170
+        },
+        {
+          "t": "psalms",
+          "size": 330,
+          "key": true
+        }
+      ],
+      "pops": [
+        {
+          "crop": [
+            262,
+            596,
+            1540,
+            424
+          ],
+          "w": 1250,
+          "x": 420,
+          "y": 640,
+          "rot": -3
+        }
+      ],
+      "pills": [
+        {
+          "t": "The Scottish Psalter of 1650",
+          "x": 110,
+          "y": 748,
+          "abs": true,
+          "kind": "dark",
+          "size": 58
+        }
+      ]
+    },
+    {
+      "shot": "playing.png",
+      "tilt": -4,
+      "dx": 30,
+      "lines": [
+        {
+          "t": "Follow every",
+          "size": 150
+        },
+        {
+          "t": "syllable",
+          "size": 290,
+          "key": true
+        }
+      ],
+      "pops": [
+        {
+          "crop": [
+            262,
+            780,
+            1000,
+            500
+          ],
+          "w": 1150,
+          "x": 90,
+          "y": 560,
+          "rot": 3
+        }
+      ],
+      "pills": []
+    },
+    {
+      "shot": "tunes.png",
+      "tilt": 3,
+      "dx": -20,
+      "lines": [
+        {
+          "t": "Choose the",
+          "size": 160
+        },
+        {
+          "t": "tune",
+          "size": 400,
+          "key": true
+        }
+      ],
+      "pops": [
+        {
+          "crop": [
+            550,
+            486,
+            964,
+            620
+          ],
+          "w": 1050,
+          "x": 600,
+          "y": 420,
+          "rot": -3
+        }
+      ],
+      "pills": []
+    },
+    {
+      "shot": "music.png",
+      "tilt": -4,
+      "dx": 30,
+      "lines": [
+        {
+          "t": "Read the",
+          "size": 170
+        },
+        {
+          "t": "music",
+          "size": 380,
+          "key": true
+        }
+      ],
+      "pops": [
+        {
+          "crop": [
+            262,
+            890,
+            1540,
+            430
+          ],
+          "w": 1300,
+          "x": 80,
+          "y": 640,
+          "rot": 3
+        }
+      ],
+      "pills": []
+    }
+  ]
+}
