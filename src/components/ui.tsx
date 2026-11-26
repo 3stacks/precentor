@@ -126,6 +126,12 @@ export function Footer() {
       <A href="/privacy" style={{ fontSize: 14 }}>
         Privacy
       </A>
+      <Text style={{ color: c.muted }} aria-hidden>
+        ·
+      </Text>
+      <A href="/terms" style={{ fontSize: 14 }}>
+        Terms
+      </A>
     </View>
   )
 }

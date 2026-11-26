@@ -10,7 +10,7 @@
 //    JSON-LD of that psalm, and the words of the psalm as plain HTML inside
 //    #root. The app replaces that HTML when it starts.
 // 2. index.html: the same for the home page, with a link to each psalm.
-// 3. about.html and privacy.html: a title and a canonical link.
+// 3. about.html, privacy.html and terms.html: a title and a canonical link.
 // 4. sitemap.xml, robots.txt and llms.txt.
 //
 // SITE_URL sets the domain of the links. It is https://precentor.app by default.
@@ -143,7 +143,7 @@ export function homePage(index) {
     `<p>${esc(DESCRIPTION)}</p>`,
     `<p>${NAME} has each psalm of ${esc(BOOK)}, with ${index.tunes.length} tunes in harmony. Choose a psalm, choose a tune, and sing along. The player plays the tune and shows each syllable as you sing. The music view shows the score, verse by verse. ${NAME} is free, with no account and no advertisements. It works on the web, and there is an app for iPhone. An app for Android comes later.</p>`,
     `<p>${link(APP_STORE, `Get ${NAME} for iPhone from the App Store`)}</p>`,
-    `<p>${link('/about', `About ${NAME}`)} · ${link('/privacy', 'Privacy')}</p>`,
+    `<p>${link('/about', `About ${NAME}`)} · ${link('/privacy', 'Privacy')} · ${link('/terms', 'Terms')}</p>`,
     `<h2>The psalms</h2>`,
     `<ul>\n${list}\n</ul>`,
   ].join('\n')
@@ -198,6 +198,7 @@ export function llms(index) {
 - [Home](${SITE}/): each psalm, with a link.
 - [About](${SITE}/about): how to use ${NAME}, the metres, the tunes and the sources.
 - [Privacy](${SITE}/privacy): ${NAME} collects no personal data.
+- [Terms](${SITE}/terms): the terms of use of ${NAME}.
 
 ## Psalms
 
@@ -227,10 +228,14 @@ function main() {
     join(dist, 'privacy.html'),
     page(template, { path: '/privacy', title: `Privacy · ${NAME}`, description: `${NAME} collects no personal data. The apps have no account, no advertisements and no tracking.` }),
   )
+  writeFileSync(
+    join(dist, 'terms.html'),
+    page(template, { path: '/terms', title: `Terms · ${NAME}`, description: `The terms of use of ${NAME}. ${NAME} is free, and we supply it as it is.` }),
+  )
   writeFileSync(join(dist, 'index.html'), page(template, homePage(index)))
 
   const date = new Date().toISOString().slice(0, 10)
-  const paths = ['/', '/about', '/privacy', ...index.psalms.map((p) => `/psalm/${p.key}`)]
+  const paths = ['/', '/about', '/privacy', '/terms', ...index.psalms.map((p) => `/psalm/${p.key}`)]
   writeFileSync(join(dist, 'sitemap.xml'), sitemap(paths, date))
   writeFileSync(join(dist, 'robots.txt'), robots())
   writeFileSync(join(dist, 'llms.txt'), llms(index))

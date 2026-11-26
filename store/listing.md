@@ -12,6 +12,7 @@ brackets.
 | Support URL | https://github.com/3stacks/precentor/issues |
 | Marketing URL | https://precentor.app |
 | Privacy policy URL | https://precentor.app/privacy |
+| Terms of service URL | https://precentor.app/terms |
 | Copyright | 2026 Luke Boyle |
 | Price | Free |
 

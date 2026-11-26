@@ -31,7 +31,7 @@ const skip = (f) =>
   f.startsWith('/corpus/settings/') ||
   // The pages for crawlers (scripts/seo.mjs). The app is index.html.
   f.startsWith('/psalm/') ||
-  ['/_headers', '/_redirects', '/metadata.json', '/sw.js', '/about.html', '/privacy.html', '/sitemap.xml', '/robots.txt', '/llms.txt'].includes(f) ||
+  ['/_headers', '/_redirects', '/metadata.json', '/sw.js', '/about.html', '/privacy.html', '/terms.html', '/sitemap.xml', '/robots.txt', '/llms.txt'].includes(f) ||
   f.endsWith('.map')
 const precache = files.filter((f) => !skip(f)).sort()
 
