@@ -75,7 +75,15 @@ the Google Play developer account. `store/listing.md` has the text of each store
     npx eas-cli@latest submit -p android --latest
     ```
 
-12. Production release waits for the change of the developer account to an organisation account.
+    The submit goes to the internal track as a draft.
+
+12. Release to production. The developer account is an organisation account, so Google Play asks
+    for no closed test.
+    - Check the trader details of the developer account. Google Play shows the company name, the
+      address, the email address and the phone number on the store page.
+    - In "Production", add the countries.
+    - Make a production release with the bundle from the internal test.
+    - Send the release for review.
 
 ## Screenshots
 
@@ -84,7 +92,8 @@ The screenshots are in `store/screenshots/`. Upload them in the order of the fil
 - App Store Connect, 6.9-inch iPhone: `ios/`.
 - App Store Connect, 13-inch iPad: `ipad/`. The app supports the iPad, so App Store Connect needs
   this set.
-- Google Play: `play/`.
+- Google Play: `bold/play/`. This folder holds the bold set, and `play/` holds the first design.
+  To compare the two designs, use `play/` as the variant of a store listing experiment.
 
 `store/screenshots/README.md` tells how to make them again.
 

@@ -1,7 +1,7 @@
 {
   "raw": "raw",
   "statusBar": false,
-  "play": false,
+  "play": true,
   "palette": {
     "loud": "#ff5b3a",
     "loudInk": "#2a0a08",
